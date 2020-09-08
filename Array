@@ -21,6 +21,7 @@ public:
 		size = 1;
 		next = 0;
 		mem = new int[1];
+		mem[0] = 0;
 	}
 
 	void Copy(int* to, int* from, int until) {
@@ -92,15 +93,12 @@ public:
 		}
 	}
 
-	int operator[] (int index) {
-		if (next == 0) {
-			return 0;
-		}
-		else if (index >= int(next)) {
-			return mem[next - 1];
-		}
-		else if (index < 0) {
+	int& Get(size_t index) {
+		if (next == 0 || index < 0) {
 			index = 0;
+		}
+		else if (index >= next) {
+			index = next - 1;
 		}
 		return mem[index];
 	}
@@ -111,7 +109,7 @@ int main()
 {
 	Array a;
 	a.ReadArray();
-	printf("%d %d %d", a[3], a[-2], a[20]);
+	a.Get(1)++;
 	Array b(a);
 	b.PrintArray();
 	Array c;
@@ -121,5 +119,4 @@ int main()
 	a.PrintArray();
 	return 0;
 }
-
 
