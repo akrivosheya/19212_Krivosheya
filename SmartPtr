@@ -1,0 +1,13 @@
+class SmartPtr{
+   public:
+      SmartPtr() = default;
+      SmartPtr(A*a) : a_(a){};
+      ~SmartPtr(){delete a_};
+
+   private:
+      A * a_ = nullptr;
+}
+
+int main(){
+   
+}
