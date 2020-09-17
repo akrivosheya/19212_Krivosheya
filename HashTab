@@ -1,0 +1,131 @@
+#include <iostream>
+#include <vector>
+
+typedef std::string Key;
+
+struct Value {
+	unsigned age;
+	unsigned weight;
+};
+
+struct Student {
+	Key name;
+	Value param;
+	Student* next;
+};
+
+class HashTable {
+public:
+	void Free(Student*& stud) {
+		if (stud == nullptr) {
+			return;
+		}
+		Free(stud->next);
+		delete stud;
+	}
+	HashTable(): _size(8), _count(0){
+		tab = new Student* [_size];
+		for (int i = 0; i < _size; ++i) {
+			tab[i] = nullptr;
+		}
+	}
+	~HashTable() {
+		for (int i = 0; i < _size; ++i) {
+			Free(tab[i]);
+		}
+		delete[] tab;
+	}
+
+	HashTable(const HashTable& b): _size(b._size), _count(b._count){
+		tab = new Student * [_size];
+		for (int i = 0; i < _size; ++i) {
+			CopyStudent(tab[i], b.tab[i]);
+		}
+	}
+
+	size_t Hash(const Key& k, size_t _size) {
+		size_t res = 0;
+		int lim = k.size();
+		for (int i = 0; i < lim; ++i) {
+			res = (res * 31 + k[i]) % _size;
+		}
+		return res;
+	}
+
+	void swap(HashTable& b);///////////
+
+	HashTable& operator=(const HashTable& b);//////////
+
+	void clear() {
+		for (int i = 0; i < _size; ++i) {
+			Free(tab[i]);
+		}
+		delete[] tab;
+		_count = 0;
+	}
+
+	bool insert(const Key& k, const Value& v) {
+		//проверрка
+		size_t i = Hash(k, _size);
+		Student* stud = new Student{ k, v, nullptr};
+		if (!stud) {
+			return false;
+		}
+		Push(tab[i], stud);
+		return true;
+	}
+
+	bool erase(const Key& k) {
+		size_t i = Hash(k, _size);
+		if (!FindAndErase(tab[i], k)) {
+			return false;
+		}
+		return true;
+	}
+
+	bool contains(const Key& k) const {
+		size_t i = Hash(k, _size);
+		if (!Find(tab[i], k)) {
+			return false;
+		}
+		return true;
+	}
+
+	Value& operator[](const Key& k) {
+		size_t i = Hash(k, _size);
+		return Get(tab[i], k);
+	}
+
+	Value& at(const Key& k) {
+		size_t i = Hash(k, _size);
+		return Get(tab[i], k);
+	}
+	const Value& at(const Key& k) const {
+		size_t i = Hash(k, _size);
+		return Get(tab[i], k);
+	}
+
+	size_t size() const {
+		return _size;
+	}
+	bool empty() const {
+		if (!count) {
+			return false;
+		}
+		return true;
+	}
+
+	friend bool operator==(const HashTable& a, const HashTable& b);////////////////
+	friend bool operator!=(const HashTable& a, const HashTable& b);/////////////////
+
+private:
+	size_t _size;
+	size_t _count;
+	Student **tab;
+};
+
+int main()
+{
+	return 0;
+}
+
