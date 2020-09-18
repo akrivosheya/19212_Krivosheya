@@ -25,6 +25,10 @@ public:
 	}
 	HashTable(): _size(8), _count(0){
 		tab = new Student* [_size];
+		if (!tab) {
+			std::cout << "Error!" << std::endl;
+			return;
+		}
 		for (int i = 0; i < _size; ++i) {
 			tab[i] = nullptr;
 		}
@@ -36,14 +40,32 @@ public:
 		delete[] tab;
 	}
 
+	bool CopyStudent(Student*& to, Student*& from) {
+		if (!from) {
+			return true;
+		}
+		to = new Student{ from->name, from->param, nullptr };
+		if (!to) {
+			std::cout << "Error!" << std::endl;
+			return false;
+		}
+		return CopyStudent(to->next, from->next);
+	}
+
 	HashTable(const HashTable& b): _size(b._size), _count(b._count){
 		tab = new Student * [_size];
+		if (!tab) {
+			std::cout << "Error!" << std::endl;
+		}
+		for (int i = 0; i < _size; ++i) {
+			tab[i] = nullptr;
+		}
 		for (int i = 0; i < _size; ++i) {
 			CopyStudent(tab[i], b.tab[i]);
 		}
 	}
 
-	size_t Hash(const Key& k, size_t _size) {
+	size_t Hash(const Key& k) const{
 		size_t res = 0;
 		int lim = k.size();
 		for (int i = 0; i < lim; ++i) {
@@ -61,47 +83,101 @@ public:
 			Free(tab[i]);
 		}
 		delete[] tab;
+		tab = new Student * [8];
 		_count = 0;
+	}
+
+	bool Push(Student*& to, const Key& k, const Value& v) {
+		if (!to && to->name != k) {
+			Student* stud = new Student{ k, v, nullptr };
+			if (!stud) {
+				return false;
+			}
+			to = stud;
+			return true;
+		}
+		else if (Push(to->next, k, v)){
+			return true;
+		}
+		else {
+			return false;
+		}
 	}
 
 	bool insert(const Key& k, const Value& v) {
 		//проверрка
-		size_t i = Hash(k, _size);
-		Student* stud = new Student{ k, v, nullptr};
+		size_t i = Hash(k);
+		if (Push(tab[i], k, v)) {
+			++_count;
+			return true;
+		}
+		return false;
+	}
+
+	bool FindAndErase(Student*& stud, const Key& k) {
 		if (!stud) {
 			return false;
 		}
-		Push(tab[i], stud);
-		return true;
+		else if (stud->name != k) {
+			return FindAndErase(stud->next, k);
+		}
+		else {
+			Student* next = stud->next;
+			free(stud);
+			stud = next;
+			return true;
+		}
 	}
 
 	bool erase(const Key& k) {
-		size_t i = Hash(k, _size);
+		size_t i = Hash(k);
 		if (!FindAndErase(tab[i], k)) {
 			return false;
 		}
+		--_count;
 		return true;
 	}
 
+	bool Find(Student*& stud, const Key& k) const {
+		if (!stud) {
+			return false;
+		}
+		else if (stud->name != k) {
+			return Find(stud->next, k);
+		}
+		else {
+			return true;
+		}
+	}
+
 	bool contains(const Key& k) const {
-		size_t i = Hash(k, _size);
+		size_t i = Hash(k);
 		if (!Find(tab[i], k)) {
 			return false;
 		}
 		return true;
 	}
 
+	Value& Get(Student*& stud, const Key& k) const{
+		if (stud && stud->name == k) {
+			return stud->param;
+		}
+		else if(stud){
+			return Get(stud->next, k);
+		}
+	}
+
 	Value& operator[](const Key& k) {
-		size_t i = Hash(k, _size);
+		size_t i = Hash(k);
 		return Get(tab[i], k);
 	}
 
 	Value& at(const Key& k) {
-		size_t i = Hash(k, _size);
+		size_t i = Hash(k);
 		return Get(tab[i], k);
 	}
 	const Value& at(const Key& k) const {
-		size_t i = Hash(k, _size);
+		size_t i = Hash(k);
 		return Get(tab[i], k);
 	}
 
@@ -109,7 +185,7 @@ public:
 		return _size;
 	}
 	bool empty() const {
-		if (!count) {
+		if (!_count) {
 			return false;
 		}
 		return true;
