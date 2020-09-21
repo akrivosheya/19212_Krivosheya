@@ -1,5 +1,5 @@
 #include <iostream>
-#include <vector>
+#include "gtest/gtest.h"
 
 typedef std::string Key;
 
@@ -104,8 +104,25 @@ public:
 		}
 	}
 
+	/*bool IncreaseTab(void) {
+		Student** newTab = new Student * [_size * 2];
+		if (!newTab) {
+			return false;
+		}
+		for()
+	}*/
+
 	bool insert(const Key& k, const Value& v) {
-		//проверрка
+		/*if (_count / (double)_size > 1.0) {
+			if (!IncreaseTab()) {
+				return false;
+			}
+		}
+		else if (_size != 8 && _count / (double)_size < 0.5) {
+			if (!DecreaseTab()) {
+				return false;
+			}
+		}*/
 		size_t i = Hash(k);
 		if (Push(tab[i], k, v)) {
 			++_count;
@@ -202,6 +219,8 @@ private:
 
 int main()
 {
+	HashTable A;
+	std::cout << A.size() << std::endl;
 	return 0;
 }
 
