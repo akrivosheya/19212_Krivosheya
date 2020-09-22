@@ -1,13 +1,97 @@
-class SmartPtr{
-   public:
-      SmartPtr() = default;
-      SmartPtr(A*a) : a_(a){};
-      ~SmartPtr(){delete a_};
+#include <iostream>
 
-   private:
-      A * a_ = nullptr;
-}
+class A {
+public:
+	A() : x(2), y(6.2), count(0) {}
+	void show() {
+		std::cout << x << " " << y << " " << count << std::endl;
+	}
+	void increase() {
+		++count;
+	}
+	void decrease() {
+		--count;
+	}
+	int get() {
+		return count;
+	}
+private:
+	int x;
+	double y;
+	int count;
+};
 
-int main(){
-   
+class SmartPtr {
+public:
+	SmartPtr() = default;
+	SmartPtr(A* a) : a_(a) {
+		a_->increase();
+	}
+	~SmartPtr() { 
+		if (a_) {
+			a_->decrease();
+		}
+	}
+
+	A& operator*() {
+		return *a_;
+	}
+
+	A* operator->() {
+		return a_;
+	}
+
+	A* release() {
+		if (a_) {
+			a_->decrease();
+		}
+		A* t = a_;
+		a_ = nullptr;
+		return t;
+	}
+
+	A* reset(A* x) {
+		if (a_) {
+			a_->decrease();
+		}
+		a_ = x;
+		a_->increase();
+		return a_;
+	}
+
+	A* get() {
+		return a_;
+	}
+
+	void Free() {
+		if (a_) {
+			a_->decrease();
+			a_->show();
+			if (a_->get() == 0) {
+				free(a_);
+			}
+			a_ = nullptr;
+		}
+	}
+
+	const SmartPtr& operator=(const SmartPtr& p) {
+		if (this == &p) {
+			return *this;
+		}
+		if (a_) {
+			a_->decrease();
+		}
+		a_ = p.a_;
+		if (a_) {
+			a_->increase();
+		}
+		return *this;
+	}
+
+private:
+	A* a_ = nullptr;
+};
+
+int main() {
+	return 0;
 }
