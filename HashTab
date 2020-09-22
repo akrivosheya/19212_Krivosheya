@@ -1,5 +1,4 @@
 #include <iostream>
-#include "gtest/gtest.h"
 
 typedef std::string Key;
 
@@ -23,8 +22,8 @@ public:
 		Free(stud->next);
 		delete stud;
 	}
-	HashTable(): _size(8), _count(0){
-		tab = new Student* [_size];
+	HashTable() : _size(8), _count(0) {
+		tab = new Student * [_size];
 		if (!tab) {
 			std::cout << "Error!" << std::endl;
 			return;
@@ -52,7 +51,7 @@ public:
 		return CopyStudent(to->next, from->next);
 	}
 
-	HashTable(const HashTable& b): _size(b._size), _count(b._count){
+	HashTable(const HashTable& b) : _size(b._size), _count(b._count) {
 		tab = new Student * [_size];
 		if (!tab) {
 			std::cout << "Error!" << std::endl;
@@ -65,7 +64,7 @@ public:
 		}
 	}
 
-	size_t Hash(const Key& k) const{
+	size_t Hash(const Key& k) const {
 		size_t res = 0;
 		int lim = k.size();
 		for (int i = 0; i < lim; ++i) {
@@ -96,7 +95,7 @@ public:
 			to = stud;
 			return true;
 		}
-		else if (Push(to->next, k, v)){
+		else if (Push(to->next, k, v)) {
 			return true;
 		}
 		else {
@@ -175,11 +174,11 @@ public:
 		return true;
 	}
 
-	Value& Get(Student*& stud, const Key& k) const{
+	Value& Get(Student*& stud, const Key& k) const {
 		if (stud && stud->name == k) {
 			return stud->param;
 		}
-		else if(stud){
+		else if (stud) {
 			return Get(stud->next, k);
 		}
 	}
@@ -214,13 +213,9 @@ public:
 private:
 	size_t _size;
 	size_t _count;
-	Student **tab;
+	Student** tab;
 };
 
-int main()
-{
-	HashTable A;
-	std::cout << A.size() << std::endl;
+int main() {
 	return 0;
 }
-
