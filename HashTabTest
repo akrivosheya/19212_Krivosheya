@@ -1,0 +1,19 @@
+#include "pch.h"
+#include "CppUnitTest.h"
+#include "..\Lab1\lab1.cpp"
+
+using namespace Microsoft::VisualStudio::CppUnitTestFramework;
+
+namespace Lab1Test2
+{
+	TEST_CLASS(Lab1Test2)
+	{
+	public:
+		
+		TEST_METHOD(TestMethod1)
+		{
+			HashTable A;
+			Assert::IsTrue(A.size() == 8);
+		}
+	};
+}
