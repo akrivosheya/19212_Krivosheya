@@ -7,7 +7,7 @@ struct Value {
 	unsigned weight;
 };
 
-struct Student {
+struct Student {  //???????????????
 	Key name;
 	Value param;
 	Student* next;
@@ -15,37 +15,46 @@ struct Student {
 
 class HashTable {
 public:
-	void Free(Student*& stud) {
+	//??
+	void Free(Student*& stud) { //?????????
 		if (stud == nullptr) {
 			return;
 		}
 		Free(stud->next);
 		delete stud;
 	}
-	HashTable() : _size(8), _count(0) {
+
+	HashTable() : _size(8), _count(0) { // tab
 		tab = new Student * [_size];
 		if (!tab) {
-			std::cout << "Error!" << std::endl;
+			std::cout << "Error!" << std::endl; ///?????????????????????
 			return;
 		}
+		// std::fill
 		for (int i = 0; i < _size; ++i) {
 			tab[i] = nullptr;
 		}
 	}
-	~HashTable() {
-		for (int i = 0; i < _size; ++i) {
-			Free(tab[i]);
+
+	//???
+	void DeleteTable(Student**& trash, size_t lim) {
+		for (int i = 0; i < lim; ++i) {
+			Free(trash[i]);
 		}
-		delete[] tab;
+		delete[] trash;
 	}
 
-	bool CopyStudent(Student*& to, Student*& from) {
+	~HashTable() {
+		DeleteTable(tab, _size);
+	}
+
+	bool CopyStudent(Student*& to, Student*& from) {  /// copychain
 		if (!from) {
 			return true;
 		}
 		to = new Student{ from->name, from->param, nullptr };
-		if (!to) {
-			std::cout << "Error!" << std::endl;
+		if (!to) { //?????
+			std::cout << "Error!" << std::endl; //????
 			return false;
 		}
 		return CopyStudent(to->next, from->next);
@@ -56,6 +65,7 @@ public:
 		if (!tab) {
 			std::cout << "Error!" << std::endl;
 		}
+		// fill
 		for (int i = 0; i < _size; ++i) {
 			tab[i] = nullptr;
 		}
@@ -64,11 +74,11 @@ public:
 		}
 	}
 
-	size_t Hash(const Key& k) const {
+	size_t Hash(const Key& k, size_t div) const {
 		size_t res = 0;
 		int lim = k.size();
 		for (int i = 0; i < lim; ++i) {
-			res = (res * 31 + k[i]) % _size;
+			res = (res * 31 + k[i]) % div;
 		}
 		return res;
 	}
@@ -87,7 +97,7 @@ public:
 	}
 
 	bool Push(Student*& to, const Key& k, const Value& v) {
-		if (!to && to->name != k) {
+		if (!to) {
 			Student* stud = new Student{ k, v, nullptr };
 			if (!stud) {
 				return false;
@@ -103,26 +113,31 @@ public:
 		}
 	}
 
-	/*bool IncreaseTab(void) {
-		Student** newTab = new Student * [_size * 2];
+	bool IncreaseTab(void) {
+		Student** newTab = new Student * [_size * 2]; //????
 		if (!newTab) {
 			return false;
 		}
-		for()
-	}*/
+		Student* stud = nullptr;
+		for(size_t i = 0, k; i < _size; ++i){
+			stud = tab[i];
+			while(stud){
+				k = Hash(stud->name, _size * 2);
+				if(!Push(newTab[k], stud->name, stud->param)){
+					DeleteTable(newTab, _size * 2);
+					return false;
+				}
+			}
+		}
+	}
 
 	bool insert(const Key& k, const Value& v) {
 		/*if (_count / (double)_size > 1.0) {
 			if (!IncreaseTab()) {
 				return false;
 			}
-		}
-		else if (_size != 8 && _count / (double)_size < 0.5) {
-			if (!DecreaseTab()) {
-				return false;
-			}
 		}*/
-		size_t i = Hash(k);
+		size_t i = Hash(k, _size);
 		if (Push(tab[i], k, v)) {
 			++_count;
 			return true;
@@ -146,7 +161,7 @@ public:
 	}
 
 	bool erase(const Key& k) {
-		size_t i = Hash(k);
+		size_t i = Hash(k, _size);
 		if (!FindAndErase(tab[i], k)) {
 			return false;
 		}
@@ -167,7 +182,7 @@ public:
 	}
 
 	bool contains(const Key& k) const {
-		size_t i = Hash(k);
+		size_t i = Hash(k, _size);
 		if (!Find(tab[i], k)) {
 			return false;
 		}
@@ -184,16 +199,23 @@ public:
 	}
 
 	Value& operator[](const Key& k) {
-		size_t i = Hash(k);
+		size_t i = Hash(k, _size);
+		if (!contains(k)) {
+			Value* v = new Value;
+			v->age = 0; //?????
+			v->weight = 0;
+			Push(tab[i], k, *v);
+			++_count;
+		}
 		return Get(tab[i], k);
 	}
 
 	Value& at(const Key& k) {
-		size_t i = Hash(k);
-		return Get(tab[i], k);
+		size_t i = Hash(k, _size);
+		return Get(tab[i], k); //????????????
 	}
 	const Value& at(const Key& k) const {
-		size_t i = Hash(k);
+		size_t i = Hash(k, _size);
 		return Get(tab[i], k);
 	}
 
