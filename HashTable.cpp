@@ -1,30 +1,22 @@
 #include <iostream>
+#include "HashTable.h"
 
-typedef std::string Key;
-
-struct Value {
-	unsigned age = 18;
-	unsigned weight = 80;
-};
-
-class HashTable {
-public:
-	HashTable() : _size(defaultSize), _count(0), tab(new Student * [_size]){
+	HashTable::HashTable() : _size(defaultSize), _count(0), tab(new Student* [_size]) {
 		std::fill(tab, tab + sizeof(Student*) * _size, nullptr);//??????????????????????
 	}
 
-	~HashTable() {
+	HashTable::~HashTable() {
 		DeleteTable(tab, _size);
 	}
 
-	HashTable(const HashTable& b) : _size(b._size), _count(b._count), tab(new Student* [_size]){
+	HashTable::HashTable(const HashTable& b) : _size(b._size), _count(b._count), tab(new Student* [_size]) {
 		std::fill(tab, tab + sizeof(Student*) * _size, nullptr);//??????????????????????
 		for (size_t i = 0; i < _size; ++i) {
 			CopyChain(tab[i], b.tab[i]);
 		}
 	}
 
-	void swap(HashTable& b) {
+	void HashTable::swap(HashTable& b) {
 		Student** ttab = tab;
 		size_t tsize = _size;
 		size_t tcount = _count;
@@ -36,7 +28,7 @@ public:
 		b._count = tcount;
 	}
 
-	HashTable& operator=(const HashTable& b) {
+	HashTable& HashTable::operator=(const HashTable& b) {
 		if (this == &b) {
 			return *this;
 		}
@@ -51,13 +43,13 @@ public:
 		return *this;
 	}
 
-	void clear() {
+	void HashTable::clear() {
 		DeleteTable(tab, _size);
 		tab = new Student * [defaultSize];
 		_count = 0;
 	}
 
-	bool insert(const Key& k, const Value& v) {
+	bool HashTable::insert(const Key& k, const Value& v) {
 		if (_count / (double)_size > 1.0) {
 			if (!IncreaseTab()) {
 				return false;
@@ -75,7 +67,7 @@ public:
 		}
 	}
 
-	bool erase(const Key& k) {
+	bool HashTable::erase(const Key& k) {
 		size_t i = Hash(k, _size);
 		if (!FindAndErase(tab[i], k)) {
 			return false;
@@ -84,7 +76,7 @@ public:
 		return true;
 	}
 
-	bool contains(const Key& k) const {
+	bool HashTable::contains(const Key& k) {
 		size_t i = Hash(k, _size);
 		if (!Find(tab[i], k)) {
 			return false;
@@ -92,7 +84,7 @@ public:
 		return true;
 	}
 
-	Value& operator[](const Key& k) {
+	Value& HashTable::operator[](const Key& k) {
 		size_t i = Hash(k, _size);
 		if (!contains(k)) {
 			Value v;
@@ -104,30 +96,30 @@ public:
 		return Get(tab[i], k);
 	}
 
-	Value& at(const Key& k) {
+	Value& HashTable::at(const Key& k) {
 		size_t i = Hash(k, _size);
 		return Get(tab[i], k);
 	}
-	const Value& at(const Key& k) const {
+	const Value& HashTable::at(const Key& k) const {
 		size_t i = Hash(k, _size);
 		return Get(tab[i], k);
 	}
 
-	size_t size() const {
+	size_t HashTable::size() const {
 		return _size;
 	}
-	bool empty() const {
+	bool HashTable::empty() const {
 		if (!_count) {
 			return false;
 		}
 		return true;
 	}
 
-	friend bool operator==(const HashTable& a, const HashTable& b) {
+	bool operator==(const HashTable& a, const HashTable& b) {
 		if (a._size != b._size || a._count != b._count) {
 			return false;
 		}
-		Student* studA = nullptr;
+		HashTable::Student* studA = nullptr;
 		for (size_t i = 0, N = a._size; i < N; ++i) {
 			if ((!a.tab[i] && b.tab[i]) || (a.tab[i] && !b.tab[i])) {
 				return false;
@@ -143,23 +135,11 @@ public:
 		return true;
 	}
 
-	friend bool operator!=(const HashTable& a, const HashTable& b) {
+	bool operator!=(const HashTable& a, const HashTable& b) {
 		return !(a == b);
 	}
 
-private:
-	static constexpr int defaultSize = 8;
-	static constexpr int mul = 2;
-	size_t _size;
-	size_t _count;
-	struct Student {
-		Key name;
-		Value param;
-		Student* next;
-	};
-	Student** tab;
-
-	void Free(Student* stud) {
+	void HashTable::Free(Student* stud) {
 		if (stud == nullptr) {
 			return;
 		}
@@ -167,14 +147,14 @@ private:
 		delete stud;
 	}
 
-	void DeleteTable(Student** trash, size_t lim) {
+	void HashTable::DeleteTable(Student** trash, size_t lim) {
 		for (size_t i = 0; i < lim; ++i) {
 			Free(trash[i]);
 		}
 		delete[] trash;
 	}
 
-	bool CopyChain(Student*& to, Student*& from) {
+	bool HashTable::CopyChain(Student*& to, Student*& from) {
 		if (!from) {
 			return true;
 		}
@@ -182,7 +162,7 @@ private:
 		return CopyChain(to->next, from->next);
 	}
 
-	size_t Hash(const Key& k, size_t div) const {
+	size_t HashTable::Hash(const Key& k, size_t div) const {
 		size_t res = 0;
 		int lim = k.size();
 		for (int i = 0; i < lim; ++i) {
@@ -191,7 +171,7 @@ private:
 		return res;
 	}
 
-	bool Push(Student*& to, Student* stud) {
+	bool HashTable::Push(Student*& to, Student* stud) {
 		if (!to) {
 			to = stud;
 			return true;
@@ -204,7 +184,7 @@ private:
 		}
 	}
 
-	Student* TakeFirstStudent(Student*& from) {
+	HashTable::Student* HashTable::TakeFirstStudent(Student*& from) {
 		if (!from) {
 			return nullptr;
 		}
@@ -214,7 +194,7 @@ private:
 		return stud;
 	}
 
-	bool IncreaseTab(void) {
+	bool HashTable::IncreaseTab(void) {
 		Student** newTab = new Student * [_size * mul];
 		if (!newTab) {
 			return false;
@@ -234,7 +214,7 @@ private:
 		return true;
 	}
 
-	bool FindAndErase(Student*& stud, const Key& k) {
+	bool HashTable::FindAndErase(Student*& stud, const Key& k) {
 		if (!stud) {
 			return false;
 		}
@@ -249,7 +229,7 @@ private:
 		}
 	}
 
-	bool Find(Student*& stud, const Key& k) const {
+	bool HashTable::Find(Student*& stud, const Key& k) const {
 		if (!stud) {
 			return false;
 		}
@@ -261,7 +241,7 @@ private:
 		}
 	}
 
-	Value& Get(Student*& stud, const Key& k) const {
+	Value& HashTable::Get(Student*& stud, const Key& k) const {
 		if (stud && stud->name == k) {
 			return stud->param;
 		}
@@ -270,7 +250,7 @@ private:
 		}
 	}
 
-	Value& Get(Student*& stud, const Key& k) {
+	Value& HashTable::Get(Student*& stud, const Key& k) {
 		if (stud && stud->name == k) {
 			return stud->param;
 		}
@@ -279,7 +259,7 @@ private:
 		}
 	}
 
-	friend bool CompareStudent(Student* a, Student* b) {
+	bool CompareStudent(HashTable::Student* a, HashTable::Student* b) {
 		while (b) {
 			if (a->name != b->name) {
 				b = b->next;
@@ -294,8 +274,3 @@ private:
 		}
 		return false;
 	}
-};
-
-int main() {
-	return 0;
-}
