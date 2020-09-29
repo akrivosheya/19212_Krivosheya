@@ -10,7 +10,7 @@ struct Value {
 class HashTable {
 public:
 	HashTable() : _size(defaultSize), _count(0), tab(new Student* [_size]) {
-		std::fill(tab, tab + sizeof(Student*) * _size, nullptr);//??????????????????????
+		std::fill(tab, tab + _size, nullptr);
 	}
 
 	~HashTable() {
@@ -18,7 +18,7 @@ public:
 	}
 
 	HashTable(const HashTable& b) : _size(b._size), _count(b._count), tab(new Student* [_size]) {
-		std::fill(tab, tab + sizeof(Student*) * _size, nullptr);//??????????????????????
+		std::fill(tab, tab + _size, nullptr);
 		for (size_t i = 0; i < _size; ++i) {
 			CopyChain(tab[i], b.tab[i]);
 		}
@@ -44,7 +44,7 @@ public:
 		_size = b._size;
 		_count = b._count;
 		tab = new Student * [_size];
-		std::fill(tab, tab + sizeof(Student*) * _size, nullptr);//??????????????????????
+		std::fill(tab, tab + _size, nullptr);
 		for (size_t i = 0; i < _size; ++i) {
 			CopyChain(tab[i], b.tab[i]);
 		}
@@ -54,14 +54,13 @@ public:
 	void clear() {
 		DeleteTable(tab, _size);
 		tab = new Student * [defaultSize];
+		std::fill(tab, tab + _size, nullptr);
 		_count = 0;
 	}
 
 	bool insert(const Key& k, const Value& v) {
 		if (_count / (double)_size > 1.0) {
-			if (!IncreaseTab()) {
-				return false;
-			}
+			IncreaseTab();
 		}
 		size_t i = Hash(k, _size);
 		Student* stud = new Student{ k, v, nullptr };
@@ -117,7 +116,7 @@ public:
 		return _size;
 	}
 	bool empty() const {
-		if (!_count) {
+		if (_count) {
 			return false;
 		}
 		return true;
@@ -192,7 +191,7 @@ private:
 	}
 
 	bool Push(Student*& to, Student* stud) {
-		if (!to) {
+		if (to == nullptr) {
 			to = stud;
 			return true;
 		}
@@ -214,11 +213,9 @@ private:
 		return stud;
 	}
 
-	bool IncreaseTab(void) {
+	void IncreaseTab(void) {
 		Student** newTab = new Student * [_size * mul];
-		if (!newTab) {
-			return false;
-		}
+		std::fill(newTab, newTab + _size * mul, nullptr);
 		Student* stud = nullptr;
 		for (size_t i = 0, k; i < _size; ++i) {
 			stud = TakeFirstStudent(tab[i]);
@@ -231,7 +228,6 @@ private:
 		DeleteTable(tab, _size);
 		tab = newTab;
 		_size = _size * mul;
-		return true;
 	}
 
 	bool FindAndErase(Student*& stud, const Key& k) {
@@ -249,8 +245,8 @@ private:
 		}
 	}
 
-	bool Find(Student*& stud, const Key& k) const {
-		if (!stud) {
+	bool Find(Student* stud, const Key& k) const {
+		if (stud == nullptr) {
 			return false;
 		}
 		else if (stud->name != k) {
@@ -297,7 +293,5 @@ private:
 };
 
 int main() {
-	HashTable A;
-	std::cout << ((A.size() == 8) ? "yeah" : "meh") << std::endl;
 	return 0;
 }
