@@ -1,0 +1,29 @@
+#include <iostream>
+
+enum class Type {
+  kZergling,
+  kSiegeTank,
+  kBattleCruiser,
+};
+
+class Unit {
+  Type type_;
+public:
+  Unit(Type type) : type_(type) {}
+
+  void move(int x, int y) {
+    switch(type_) {
+      case Type::kZergling: std::cout << "Zergling move" << std::endl; break;
+      case Type::kSiegeTank: std::cout << "SiegeTank move" << std::endl; break;
+      case Type::kBattleCruiser: std::cout << "BattleCruiser move" << std::endl; break;
+      default: break;
+    }
+  }
+
+  void attack(int x, int y) {/* ... */}
+};
+
+int main() {
+  Unit u(Type::kZergling);
+  u.move(100, 500);
+}
