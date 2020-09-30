@@ -1,0 +1,20 @@
+#include <unordered_map>
+
+#include "StarCraft.cpp"//????????????????
+
+typedef Unit* (*creator_t)();
+
+class Factory {
+public:
+	Unit* makeUnit(const std::string& name) {
+		creator_t c = creators_.at(name);
+		return c();
+	}
+
+	void addCreator(const std::string& name, creator_t c) {
+		creators_.insert(name, c);
+	}
+
+private:
+	std::unordered_map<std::string, creator_t> creators_;
+ };
