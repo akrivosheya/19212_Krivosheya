@@ -1,5 +1,5 @@
+#include "pch.h"
 #include "HashTable.h"
-#include <iostream>
 
 HashTable::HashTable() : _size(defaultSize), _count(0), tab(new HashTable::Student* [_size]) {
 	std::fill(tab, tab + _size, nullptr);
