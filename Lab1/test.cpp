@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "HashTable.h"
+#include <vld.h>
 
 TEST(TestCaseName, ConstrDefault) {
 	HashTable A;
@@ -197,7 +198,35 @@ TEST(TestCaseName, IncreaseTable)
 	EXPECT_TRUE(A.size() == 16);
 }
 
+TEST(TestCaseName, Exception)
+{
+	HashTable A;
+	int error = 0;
+	try {
+		A.at("Anybody");
+	}
+	catch (int) {
+		error = 1;
+	}
+	EXPECT_TRUE(error == 1);
+}
+
+TEST(TestCaseName, ExceptionConst)
+{
+	HashTable A;
+	int error = 0;
+	try {
+		const Value b = A.at("Anybody");
+	}
+	catch (int) {
+		error = 1;
+	}
+	EXPECT_TRUE(error == 1);
+}
+
 int main(int argc, char** argv) {
 	::testing::InitGoogleTest(&argc, argv);
-	return RUN_ALL_TESTS();
+	int j, i = RUN_ALL_TESTS();
+	std::cin >> j;
+	return i;
 }
