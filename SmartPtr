@@ -24,30 +24,43 @@ private:
 class SmartPtr {
 public:
 	SmartPtr() = default;
-	SmartPtr(A* a) : a_(a) {
-		a_->increase();
+	SmartPtr(A* a) {
+		if (a) {
+			a_ = a;
+			a_->increase();
+		}
 	}
 	~SmartPtr() { 
 		if (a_) {
 			a_->decrease();
+			a_ = nullptr;
 		}
 	}
 
 	A& operator*() {
+		if (!a_) {
+			throw err;
+		}
 		return *a_;
 	}
 
 	A* operator->() {
+		if (!a_) {
+			throw err;
+		}
 		return a_;
 	}
 
 	A* release() {
 		if (a_) {
 			a_->decrease();
+			A* t = a_;
+			a_ = nullptr;
+			return t;
 		}
-		A* t = a_;
-		a_ = nullptr;
-		return t;
+		else {
+			throw err;
+		}
 	}
 
 	A* reset(A* x) {
@@ -55,11 +68,16 @@ public:
 			a_->decrease();
 		}
 		a_ = x;
-		a_->increase();
+		if (a_) {
+			a_->increase();
+		}
 		return a_;
 	}
 
 	A* get() {
+		if (!a_) {
+			throw err;
+		}
 		return a_;
 	}
 
@@ -89,6 +107,7 @@ public:
 
 private:
 	A* a_ = nullptr;
+	static constexpr int err = -1;
 };
 
 int main() {
