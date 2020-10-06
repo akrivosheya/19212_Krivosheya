@@ -97,11 +97,21 @@ Value& HashTable::operator[](const Key& k) {
 
 Value& HashTable::at(const Key& k) {
 	size_t i = Hash(k, _size);
-	return Get(tab[i], k);
+	try {
+		return Get(tab[i], k);
+	}
+	catch (int) {
+		throw err;
+	}
 }
 const Value& HashTable::at(const Key& k) const {
 	size_t i = Hash(k, _size);
-	return Get(tab[i], k);
+	try {
+		return Get(tab[i], k);
+	}
+	catch (int) {
+		throw err;
+	}
 }
 
 size_t HashTable::size() const {
@@ -237,22 +247,28 @@ bool HashTable::Find(Student* stud, const Key& k) const {
 	}
 }
 
-Value& HashTable::Get(Student*& stud, const Key& k) const {
-	if (stud && stud->name == k) {
-		return stud->param;
+Value& HashTable::Get(Student* stud, const Key& k) const {
+	while (stud) {
+		if (stud->name == k) {
+			return stud->param;
+		}
+		else {
+			stud = stud->next;
+		}
 	}
-	else if (stud) {
-		return Get(stud->next, k);
-	}
+	throw err;
 }
 
-Value& HashTable::Get(Student*& stud, const Key& k) {
-	if (stud && stud->name == k) {
-		return stud->param;
+Value& HashTable::Get(Student* stud, const Key& k) {
+	while (stud) {
+		if (stud->name == k) {
+			return stud->param;
+		}
+		else {
+			stud = stud->next;
+		}
 	}
-	else if (stud) {
-		return Get(stud->next, k);
-	}
+	throw err;
 }
 
 bool CompareStudent(HashTable::Student* a, HashTable::Student* b) {
