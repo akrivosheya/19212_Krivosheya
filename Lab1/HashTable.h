@@ -43,6 +43,7 @@ public:
 private:
 	static constexpr int defaultSize = 8;
 	static constexpr int mul = 2;
+	static constexpr int err = -1;
 	size_t _size;
 	size_t _count;
 	struct Student {
@@ -70,9 +71,9 @@ private:
 
 	bool Find(Student* stud, const Key& k) const;
 
-	Value& Get(Student*& stud, const Key& k) const;
+	Value& Get(Student* stud, const Key& k) const;
 
-	Value& Get(Student*& stud, const Key& k);
+	Value& Get(Student* stud, const Key& k);
 
 	friend bool CompareStudent(HashTable::Student* a, HashTable::Student* b);
 };
