@@ -4,7 +4,7 @@
 
 TEST(TestCaseName, ConstrDefault) {
 	HashTable A;
-  EXPECT_TRUE(A.size() == 8);
+	EXPECT_TRUE(A.size() == 8);
 }
 
 TEST(TestCaseName, InsertAndOperAndAt)
@@ -67,8 +67,8 @@ TEST(TestCaseName, ConstAt)
 {
 	HashTable A;
 	A.insert("John", { 19, 76 });
-	const int w = A.at("John").weight;
-	EXPECT_TRUE(w == 76);
+	const HashTable B = A;
+	EXPECT_TRUE(B.at("John").weight == 76);
 }
 
 TEST(TestCaseName, Swap)
