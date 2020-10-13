@@ -247,7 +247,7 @@ bool HashTable::Find(Student* stud, const Key& k) const {
 	}
 }
 
-Value& HashTable::Get(Student* stud, const Key& k) const {
+const Value& HashTable::Get(Student* stud, const Key& k) const {
 	while (stud) {
 		if (stud->name == k) {
 			return stud->param;
