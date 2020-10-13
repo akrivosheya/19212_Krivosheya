@@ -71,7 +71,7 @@ private:
 
 	bool Find(Student* stud, const Key& k) const;
 
-	Value& Get(Student* stud, const Key& k) const;
+	const Value& Get(Student* stud, const Key& k) const;
 
 	Value& Get(Student* stud, const Key& k);
 
