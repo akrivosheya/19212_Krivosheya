@@ -2,7 +2,7 @@
 
 namespace{
 	bool g(){
-		Factory::getInstance->addCreator("zergling", createZergling);
+		Factory<Unit, std::string, Unit* (*)()>::getInstance->addCreator("zergling", createZergling);
 		return true;//у каждого класса
 	}
 }
