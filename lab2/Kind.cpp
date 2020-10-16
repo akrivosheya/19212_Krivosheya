@@ -3,19 +3,19 @@
 
 namespace{
 	bool g() {
-		Factory::getInstance()->addCreator("kind", createKind);
+		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("kind", createKind);
 		return true;//у каждого класса
 	}
 }
 
-void Kind::getRes(int s1, int s2) {
+void Kind::getRes(bool s1, bool s2) {
 	return;
 }
 
 bool Kind::makeMove() {
-	return true;
+	return c;
 }
 
-Kind* createKind() {
+Strategy* createKind() {
 	return new Kind;
 }
