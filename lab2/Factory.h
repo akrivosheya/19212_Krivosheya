@@ -1,19 +1,44 @@
-#include "Strategy.h"
-#include "HashTable.h"
+#include <string>
+#include <iostream>
+#include <unordered_map>
 
+
+// A. Alexandrescu "Modern Design in C++"
+// "Современное проектирование на Си++"
+template<class Product, class Id>
+struct DefaultErrorPolicy {
+	static Product* IdNotFound(const Id& name) {
+		std::cerr << "Id not found!" << name;//можно throw
+		return nullptr;
+	}
+};
+template <class Product, class Id, class Creator, class ErrorPolicy = DefaultErrorPolicy<Product, Id>>
 class Factory {
 public:
 
-	Strategy* makeStrategy(const std::string& name);
+	Product* makeUnit(const Id& name) {
+		auto it = creators_find(name);//iterator
+		if (it == creators_.end()) {//не неашёл
+			return ErrorPolicy::IdNotFound(name);
+		}
 
-	void addCreator(const std::string& name, creator_t c);
+		return it->second();//второй элемент пары ключ-значение
+	}
+	void addCreator(const Id& name, Creator c) {
+		//?????????????
+		creators_.insert({ name, c });
+	}
 
-	static Factory* getInstance();
-
+	static Factory* getInstance() {
+		static Factory f;
+		return &f;
+	}
 private:
-	Factory();
-	~Factory();
+	Factory() = default;
+	~Factory() = default;
 	Factory(const Factory&);
 	Factory& operator=(const Factory&);
-	HashTable creators_;
+
+
+	std::unordered_map<Id, Creator>  creators_;
 };
