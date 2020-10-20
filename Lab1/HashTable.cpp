@@ -57,7 +57,7 @@ bool HashTable::insert(const Key& k, const Value& v) {
 	size_t i = Hash(k, _size);
 	Student* stud = new Student{ k, v, nullptr };
 	if (Push(tab[i], stud)) {
-		++_count;//????
+		++_count;
 		return true;
 	}
 
@@ -89,7 +89,7 @@ Value& HashTable::operator[](const Key& k) {
 		Value v;
 		Student* stud = new Student{ k, v, nullptr };
 		Push(tab[i], stud);
-		++_count; //?????????
+		++_count; 
 		return stud->param;
 	}
 	return Get(tab[i], k);
