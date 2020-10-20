@@ -57,13 +57,13 @@ bool HashTable::insert(const Key& k, const Value& v) {
 	size_t i = Hash(k, _size);
 	Student* stud = new Student{ k, v, nullptr };
 	if (Push(tab[i], stud)) {
-		++_count;
+		++_count;//????
 		return true;
 	}
-	else {
-		delete stud;
-		return false;
-	}
+
+	delete stud;
+	return false;
+	
 }
 
 bool HashTable::erase(const Key& k) {
@@ -89,7 +89,7 @@ Value& HashTable::operator[](const Key& k) {
 		Value v;
 		Student* stud = new Student{ k, v, nullptr };
 		Push(tab[i], stud);
-		++_count;
+		++_count; //?????????
 		return stud->param;
 	}
 	return Get(tab[i], k);
@@ -97,21 +97,11 @@ Value& HashTable::operator[](const Key& k) {
 
 Value& HashTable::at(const Key& k) {
 	size_t i = Hash(k, _size);
-	try {
-		return Get(tab[i], k);
-	}
-	catch (int) {
-		throw err;
-	}
+	return Get(tab[i], k);
 }
 const Value& HashTable::at(const Key& k) const {
 	size_t i = Hash(k, _size);
-	try {
-		return Get(tab[i], k);
-	}
-	catch (int) {
-		throw err;
-	}
+	return Get(tab[i], k);
 }
 
 size_t HashTable::size() const {
@@ -204,20 +194,20 @@ HashTable::Student* HashTable::TakeFirstStudent(Student*& from) {
 }
 
 void HashTable::IncreaseTab(void) {
-	Student** newTab = new Student * [_size * mul];
-	std::fill(newTab, newTab + _size * mul, nullptr);
-	Student* stud = nullptr;
+	size_t newsize = _size * mul;
+	Student** newTab = new Student * [newsize];
+	std::fill(newTab, newTab + newsize, nullptr);
 	for (size_t i = 0, k; i < _size; ++i) {
-		stud = TakeFirstStudent(tab[i]);
+		Student* stud = TakeFirstStudent(tab[i]);
 		while (stud) {
-			k = Hash(stud->name, _size * mul);
+			k = Hash(stud->name, newsize);
 			Push(newTab[k], stud);
 			stud = TakeFirstStudent(tab[i]);
 		}
 	}
 	DeleteTable(tab, _size);
 	tab = newTab;
-	_size = _size * mul;
+	_size = newsize;
 }
 
 bool HashTable::FindAndErase(Student*& stud, const Key& k) {
