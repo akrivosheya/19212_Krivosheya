@@ -16,7 +16,7 @@ template <class Product, class Id, class Creator, class ErrorPolicy = DefaultErr
 class Factory {
 public:
 
-	Product* makeUnit(const Id& name) {
+	Product* makeStrategy(const Id& name) {
 		auto it = creators_find(name);//iterator
 		if (it == creators_.end()) {//не неашёл
 			return ErrorPolicy::IdNotFound(name);
