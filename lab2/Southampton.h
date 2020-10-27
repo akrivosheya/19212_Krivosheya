@@ -21,6 +21,4 @@ private:
 	bool s2;
 };
 
-bool Southampton::winnerIs = false;
-
 Strategy* createSouthampton();
