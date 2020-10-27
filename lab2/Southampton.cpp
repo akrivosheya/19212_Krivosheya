@@ -8,6 +8,8 @@ namespace {
 	}
 }
 
+bool Southampton::winnerIs = false;
+
 void Southampton::getRes(bool s1, bool s2) {
 	if (winner) {
 		return;
