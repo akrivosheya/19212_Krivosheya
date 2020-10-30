@@ -6,6 +6,8 @@ namespace {
 		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("titfortatanger", createTitForTatAnger);
 		return true;//у каждого класса
 	}
+	
+	bool b = g();
 }
 
 void TitForTatAnger::getRes(bool s1, bool s2) {
