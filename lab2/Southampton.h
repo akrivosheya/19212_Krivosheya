@@ -2,13 +2,13 @@
 
 class Southampton : public Strategy {
 public:
-	Southampton() : counter(0), winner(true), s1(true), s2(true) {
+	Southampton();/* : counter(0), winner(true), s1(true), s2(true) {
 		if (winnerIs) {
 			winner = false;
 			return;
 		}
 		winnerIs = true;
-	}
+	}*/
 	void getRes(bool s1, bool s2) override;
 	bool makeMove() override;
 private:
@@ -20,5 +20,7 @@ private:
 	bool s1;
 	bool s2;
 };
+
+//bool Southampton::winnerIs = false;
 
 Strategy* createSouthampton();
