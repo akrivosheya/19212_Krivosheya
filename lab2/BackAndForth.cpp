@@ -6,6 +6,8 @@ namespace {
 		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("backandforth", createBackAndForth);
 		return true;//у каждого класса
 	}
+	
+	bool b = g();
 }
 
 void BackAndForth::getRes(bool s1, bool s2) {
