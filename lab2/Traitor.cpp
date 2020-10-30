@@ -6,6 +6,8 @@ namespace {
 		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("traitor", createTraitor);
 		return true;//у каждого класса
 	}
+	
+	bool b = g();
 }
 
 void Traitor::getRes(bool s1, bool s2) {
