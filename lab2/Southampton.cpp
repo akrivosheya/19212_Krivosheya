@@ -6,9 +6,19 @@ namespace {
 		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("southampton", createSouthampton);
 		return true;//у каждого класса
 	}
+
+	bool b = g();
 }
 
 bool Southampton::winnerIs = false;
+
+Southampton::Southampton() : counter(0), winner(true), s1(true), s2(true) {
+	if (winnerIs) {
+		winner = false;
+		return;
+	}
+	winnerIs = true;
+}
 
 void Southampton::getRes(bool s1, bool s2) {
 	if (winner) {
