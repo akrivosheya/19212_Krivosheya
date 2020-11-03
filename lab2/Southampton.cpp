@@ -21,6 +21,10 @@ Southampton::Southampton() : counter(0), winner(true), s1(true), s2(true) {
 }
 
 void Southampton::getRes(bool s1, bool s2) {
+	if (!winnerIs) {
+		winner = true;
+		winnerIs = true;
+	}
 	if (winner) {
 		return;
 	}
@@ -51,6 +55,18 @@ bool Southampton::makeMove() {
 		return c;
 	}
 	return d;
+}
+
+std::string Southampton::getName() {
+	return name;
+}
+
+void Southampton::reload() {
+	winnerIs = false;
+	counter = 0;
+	winner = false;
+	s1 = true;
+	s2 = true;
 }
 
 Strategy* createSouthampton() {
