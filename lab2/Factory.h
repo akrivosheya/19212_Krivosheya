@@ -8,8 +8,8 @@
 template<class Product, class Id>
 struct DefaultErrorPolicy {
 	static Product* IdNotFound(const Id& name) {
-		std::cerr << "Id not found!" << name;//можно throw
-		return nullptr;
+		std::cerr << "Id not found!" << name << std::endl;//можно throw
+		throw;
 	}
 };
 template <class Product, class Id, class Creator, class ErrorPolicy = DefaultErrorPolicy<Product, Id>>
@@ -17,7 +17,7 @@ class Factory {
 public:
 
 	Product* makeStrategy(const Id& name) {
-		auto it = creators_find(name);//iterator
+		auto it = creators_.find(name);//iterator
 		if (it == creators_.end()) {//не неашёл
 			return ErrorPolicy::IdNotFound(name);
 		}
@@ -25,7 +25,6 @@ public:
 		return it->second();//второй элемент пары ключ-значение
 	}
 	void addCreator(const Id& name, Creator c) {
-		//?????????????
 		creators_.insert({ name, c });
 	}
 
