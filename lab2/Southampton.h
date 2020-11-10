@@ -10,7 +10,6 @@ public:
 private:
 	static constexpr int dancing = 618;
 	static constexpr int mask = 1;
-	static bool winnerIs;
 	std::string name = "Southampton";
 	int counter;
 	bool winner;
