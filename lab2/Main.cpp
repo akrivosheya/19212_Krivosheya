@@ -27,23 +27,20 @@ bool IsMode(char* str) {
 }
 
 bool SetModeOptional(const int& size, std::string& mode) {
-	if (size < 3) {
-		return false;
-	}
 	if (size == 3) {
 		mode = "detailed";
 	}
 	else {
 		mode = "tournament";
 	}
-	return true;
 }
 
 bool SetOptions(const int& size, std::string& mode, int& steps, int& i, const int& argc, char* argv[]) {
+	if (size < 3) {
+		return false;
+	}
 	if (i > argc - 1) {
-		if (!SetModeOptional(size, mode)) {
-			return false;
-		}
+		SetModeOptional(size, mode);
 		steps = OPTIONALSTEPS;
 	}
 	else {
@@ -58,10 +55,7 @@ bool SetOptions(const int& size, std::string& mode, int& steps, int& i, const in
 			}
 		}
 		else {
-			if (!SetModeOptional(size, mode)) {
-				return false;
-			}
-			++i;
+			SetModeOptional(size, mode);
 			if (i > argc - 1) {
 				steps = OPTIONALSTEPS;
 			}
