@@ -1,8 +1,4 @@
-#include <memory>
-#include <unordered_map>
 #include <fstream>
-#include <sstream>
-#include <cctype>
 #include <string>
 #include <vector>
 #include "Strategy.h"
@@ -13,6 +9,7 @@
 #include "Southampton.h"
 #include "TitForTatAnger.h"
 #include "TitForTatKind.h"
+#include "STFT.h"
 
 #define OPTIONALSTEPS 100
 
@@ -43,7 +40,7 @@ bool SetModeOptional(const int& size, std::string& mode) {
 }
 
 bool SetOptions(const int& size, std::string& mode, int& steps, int& i, const int& argc, char* argv[]) {
-	if (i > argc) {
+	if (i > argc - 1) {
 		if (!SetModeOptional(size, mode)) {
 			return false;
 		}
@@ -53,7 +50,7 @@ bool SetOptions(const int& size, std::string& mode, int& steps, int& i, const in
 		if (IsMode(argv[i])) {
 			mode = argv[i];
 			++i;
-			if (i > argc) {
+			if (i > argc - 1) {
 				steps = OPTIONALSTEPS;
 			}
 			else {
@@ -65,7 +62,7 @@ bool SetOptions(const int& size, std::string& mode, int& steps, int& i, const in
 				return false;
 			}
 			++i;
-			if (i > argc) {
+			if (i > argc - 1) {
 				steps = OPTIONALSTEPS;
 			}
 			else {
@@ -145,14 +142,14 @@ void SetWinners(int& pointS1, int& pointS2, int& pointS3, int& S1, int& S2, int&
 int main(int argc, char* argv[]) {
 	if (argc < 4) return -1;
 
-	std::fstream matrix("Matrix.txt");
+	std::ofstream matrix("Matrix.txt");
 	matrix << "s1 s2 s3" << std::endl;
 
 	int i = 1, steps = 0;
 	std::string mode = "IsNotSet";
-	std::unordered_map<int, Strategy*>  strategys;
-	for (; (i <= argc) && !IsMode(argv[i]) && !IsDigit(argv[i]); ++i) {
-		strategys.insert({ i, Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[i]) });
+	std::vector<Strategy*> strategys;
+	for (; (i <= argc - 1) && !IsMode(argv[i]) && !IsDigit(argv[i]); ++i) {
+		strategys.push_back(Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[i]));
 	}
 
 	if (!SetOptions(strategys.size(), mode, steps, i, argc, argv)) {
@@ -164,57 +161,66 @@ int main(int argc, char* argv[]) {
 
 	if (mode == "fast") {
 		for (int j = 0; j < steps; ++j) {
-			GetMoves(moveS1, moveS2, moveS3, strategys.find(1)->second, strategys.find(2)->second, strategys.find(3)->second);
+			matrix << "s1 - " << strategys[0]->getName() << "; s2 - " << strategys[1]->getName() <<
+				"; s2 - " << strategys[2]->getName() << std::endl;
+			GetMoves(moveS1, moveS2, moveS3, strategys[0], strategys[1], strategys[2]);
 			GetGets(moveS1, moveS2, moveS3, getS1, getS2, getS3);
 			GetPoints(pointS1, pointS2, pointS3, getS1, getS2, getS3);
-			PutRes(moveS1, moveS2, moveS3, strategys.find(1)->second, strategys.find(2)->second, strategys.find(3)->second);
+			PutRes(moveS1, moveS2, moveS3, strategys[0], strategys[1], strategys[2]);
 			matrix << Moves(moveS1, moveS2, moveS3) << "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
 		}
-		PrintRes(pointS1, pointS2, pointS3, strategys.find(1)->second, strategys.find(2)->second, strategys.find(3)->second);
+		PrintRes(pointS1, pointS2, pointS3, strategys[0], strategys[1], strategys[2]);
 	}
 	else if (mode == "detailed") {
-		matrix << "s1 - " << strategys.find(1)->second->getName() << "; s2 - " << strategys.find(2)->second->getName() <<
-			"; s2 - " << strategys.find(3)->second->getName() << std::endl;
+		matrix << "s1 - " << strategys[0]->getName() << "; s2 - " << strategys[1]->getName() <<
+			"; s2 - " << strategys[2]->getName() << std::endl;
 		std::string step;
 		std::cin >> step;
 		while (step != "quit") {
-			GetMoves(moveS1, moveS2, moveS3, strategys.find(1)->second, strategys.find(2)->second, strategys.find(3)->second);
+			GetMoves(moveS1, moveS2, moveS3, strategys[0], strategys[1], strategys[2]);
 			GetGets(moveS1, moveS2, moveS3, getS1, getS2, getS3);
 			GetPoints(pointS1, pointS2, pointS3, getS1, getS2, getS3);
-			PutRes(moveS1, moveS2, moveS3, strategys.find(1)->second, strategys.find(2)->second, strategys.find(3)->second);
+			PutRes(moveS1, moveS2, moveS3, strategys[0], strategys[1], strategys[2]);
 			matrix << Moves(moveS1, moveS2, moveS3) << "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
 			std::cout << Moves(moveS1, moveS2, moveS3) << "  =>  " << getS1 << " " << getS2 << " " << getS3 
 				<< "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 <<  std::endl;
 			std::cin >> step;
 		}
-		PrintRes(pointS1, pointS2, pointS3, strategys.find(1)->second, strategys.find(2)->second, strategys.find(3)->second);
+		PrintRes(pointS1, pointS2, pointS3, strategys[0], strategys[1], strategys[2]);
 	}
 	else {
 		int limit = strategys.size();
 		int battle = 1;
-		std::vector<int> players(limit);
-		for (int i = 1; i <= limit; ++i) {
-			for (int j = i + 1; j <= limit; ++j) {
-				for (int k = j + 1; k <= limit; ++k) {
-					for (int s = 0; s < steps; ++j) {
-						GetMoves(moveS1, moveS2, moveS3, strategys.find(i)->second, strategys.find(j)->second, strategys.find(k)->second);
+		std::vector<int> points(limit);
+		for (int i = 0; i < limit; ++i) {
+			for (int j = i + 1; j < limit; ++j) {
+				for (int k = j + 1; k < limit; ++k) {
+					matrix << "s1 - " << strategys[i]->getName() << "; s2 - " << strategys[j]->getName() <<
+						"; s2 - " << strategys[k]->getName() << std::endl;
+					for (int s = 0; s < steps; ++s) {
+						GetMoves(moveS1, moveS2, moveS3, strategys[i], strategys[j], strategys[k]);
 						GetGets(moveS1, moveS2, moveS3, getS1, getS2, getS3);
 						GetPoints(pointS1, pointS2, pointS3, getS1, getS2, getS3);
-						PutRes(moveS1, moveS2, moveS3, strategys.find(i)->second, strategys.find(j)->second, strategys.find(k)->second);
+						PutRes(moveS1, moveS2, moveS3, strategys[i], strategys[j], strategys[k]);
 						matrix << Moves(moveS1, moveS2, moveS3) << "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
 					}
-					SetWinners(pointS1, pointS2, pointS3, players[i], players[j], players[k]);
+					matrix << std::endl;
+					SetWinners(pointS1, pointS2, pointS3, points[i], points[j], points[k]);
 					std::cout << battle << ") ";
 					++battle;
-					PrintRes(pointS1, pointS2, pointS3, strategys.find(i)->second, strategys.find(j)->second, strategys.find(k)->second);
-					Reload(strategys.find(i)->second, strategys.find(j)->second, strategys.find(k)->second);
+					PrintRes(pointS1, pointS2, pointS3, strategys[i], strategys[j], strategys[k]);
+					Reload(strategys[i], strategys[j], strategys[k]);
 					pointS1 = pointS2 = pointS3 = 0;
 				}
 			}
 		}
+		std::cout << std::endl << "Results:" << std::endl;
+		for (int i = 0; i < limit; ++i) {
+			std::cout << i << ") " << strategys[i]->getName() << " - " << points[i] << std::endl;
+		}
 	}
 
 	matrix.close();
+	return 0;
 
-	//std::unique_ptr<Strategy> u(Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[1]));//смарт поинтер*/
 }
