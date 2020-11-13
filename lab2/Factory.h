@@ -9,7 +9,7 @@ template<class Product, class Id>
 struct DefaultErrorPolicy {
 	static Product* IdNotFound(const Id& name) {
 		std::cerr << "Id not found!" << name << std::endl;//можно throw
-		throw;
+		return nullptr;
 	}
 };
 template <class Product, class Id, class Creator, class ErrorPolicy = DefaultErrorPolicy<Product, Id>>
