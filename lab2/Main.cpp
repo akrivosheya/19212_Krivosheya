@@ -14,6 +14,9 @@ int main(int argc, char* argv[]) {
 	std::vector<Strategy*> strategys;
 	for (; (i <= argc - 1) && !IsMode(argv[i]) && !IsDigit(argv[i]); ++i) {
 		strategys.push_back(Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[i]));
+		if (!strategys[i - 1]) {
+			return -1;
+		}
 	}
 
 	if (!SetOptions(strategys.size(), mode, steps, i, argc, argv)) {
