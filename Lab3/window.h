@@ -3,8 +3,9 @@
 
 #include <QWidget>
 #include <QPushButton>
-#include <QGridLayout>
 #include <QLineEdit>
+#include "RenderArea.h"
+#include "Game.h"
 
 class Window : public QWidget
 {
@@ -13,8 +14,13 @@ class Window : public QWidget
 public:
     Window();
     ~Window();
+    
+public slots:
+    void changeRect();
 
 private:
+    Game* game;
+    RenderArea* renderArea;
     QPushButton *play_button;
     QPushButton *stop_button;
     QPushButton *save_button;
