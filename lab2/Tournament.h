@@ -3,7 +3,7 @@
 class Tournament : public Game {
 public:
 	Tournament();
-	void Play(int& steps, std::vector<Strategy*>& strategys, const char* file) override;
+	void Play(const char* file, Printer& print) override;
 private:
 	void Reload(Strategy* S1, Strategy* S2, Strategy* S3);
 };
