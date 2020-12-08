@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Detailed.h"
 #include "Factory.h"
 
@@ -11,38 +10,24 @@ namespace {
 	bool b = g();
 }
 
-Detailed::Detailed() {
+Detailed::Detailed(){
 	name = "Detailed";
 }
 
-void Detailed::Play(int& steps, std::vector<Strategy*>& strategys, const char* file) {
-	std::ofstream matrix(file);
-	matrix << "s1 s2 s3" << std::endl;
-	matrix << "s1 - " << strategys[0]->getName() << "; s2 - " << strategys[1]->getName() <<
-		"; s3 - " << strategys[2]->getName() << std::endl;
+void Detailed::Play(const char* file, Printer& print) {
 	std::string step;
 	std::cin >> step;
-
-	//int i = 0;  //for tests
-
 	while (step != "quit") {
 		GetMoves(strategys[0], strategys[1], strategys[2]);
-		GetGets();
+		GetGets(file);
 		GetPoints();
 		PutRes(strategys[0], strategys[1], strategys[2]);
-		matrix << Moves() << "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
-		std::cout << Moves() << "  =>  " << getS1 << " " << getS2 << " " << getS3
-			<< "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
+		print.PrintDetailedRes(moveS1, moveS2, moveS3,
+			pointS1, pointS2, pointS3,
+			getS1, getS2, getS3);
 		std::cin >> step;
-
-		/*++i;
-		if (i > 10) {
-			step = "quit";
-		}*/
-
 	}
-	PrintRes(strategys[0], strategys[1], strategys[2]);
-	matrix.close();
+	print.PrintRes(strategys[0], strategys[1], strategys[2], pointS1, pointS2, pointS3);
 }
 
 Game* createDetailed() {
