@@ -3,7 +3,7 @@
 class Fast : public Game {
 public:
 	Fast();
-	void Play(int& steps, std::vector<Strategy*>& strategys, const char* file) override;
+	void Play(const char* file, Printer& print) override;
 };
 
 Game* createFast();
