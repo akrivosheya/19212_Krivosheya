@@ -10,28 +10,18 @@ namespace {
 	bool b = g();
 }
 
-Fast::Fast() {
-	pointS1 = pointS2 = pointS3 = 0;
+Fast::Fast(){
 	name = "Fast";
 }
 
-void Fast::Play(int& steps, std::vector<Strategy*>& strategys, const char* file) {
-	std::ofstream matrix(file);
-	matrix << "s1 s2 s3" << std::endl;
-	bool moveS1, moveS2, moveS3;
-	int getS1, getS2, getS3;
-	pointS1 = pointS2 = pointS3 = 0;
-	matrix << "s1 - " << strategys[0]->getName() << "; s2 - " << strategys[1]->getName() <<
-		"; s3 - " << strategys[2]->getName() << std::endl;
+void Fast::Play(const char* file, Printer& print) {
 	for (int j = 0; j < steps; ++j) {
-		GetMoves(moveS1, moveS2, moveS3, strategys[0], strategys[1], strategys[2]);
-		GetGets(moveS1, moveS2, moveS3, getS1, getS2, getS3);
-		GetPoints(pointS1, pointS2, pointS3, getS1, getS2, getS3);
-		PutRes(moveS1, moveS2, moveS3, strategys[0], strategys[1], strategys[2]);
-		matrix << Moves(moveS1, moveS2, moveS3) << "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
+		GetMoves(strategys[0], strategys[1], strategys[2]);
+		GetGets(file);
+		GetPoints();
+		PutRes(strategys[0], strategys[1], strategys[2]);
 	}
-	PrintRes(pointS1, pointS2, pointS3, strategys[0], strategys[1], strategys[2]);
-	matrix.close();
+	print.PrintRes(strategys[0], strategys[1], strategys[2], pointS1, pointS2, pointS3);
 }
 
 Game* createFast() {
