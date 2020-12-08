@@ -1,6 +1,18 @@
 #include "Game.h"
+#include <fstream>
 
-std::string Game::Moves(bool& moveS1, bool& moveS2, bool& moveS3) {
+Game::Game(): steps(0),
+			moveS1(false),
+			moveS2(false), 
+			moveS3(false), 
+			getS1(0), 
+			getS2(0), 
+			getS3(0), 
+			pointS1(0), 
+			pointS2(0), 
+			pointS3(0){}
+
+std::string Game::Moves() {
 	std::string m1 = ((moveS1) ? "C" : "D");
 	std::string m2 = ((moveS2) ? "C" : "D");
 	std::string m3 = ((moveS3) ? "C" : "D");
@@ -8,36 +20,44 @@ std::string Game::Moves(bool& moveS1, bool& moveS2, bool& moveS3) {
 	return moves;
 }
 
-void Game::GetMoves(bool& moveS1, bool& moveS2, bool& moveS3, Strategy* S1, Strategy* S2, Strategy* S3) {
+void Game::GetMoves(Strategy* S1, Strategy* S2, Strategy* S3) {
 	moveS1 = S1->makeMove();
 	moveS2 = S2->makeMove();
 	moveS3 = S3->makeMove();
 }
 
-void Game::GetGets(bool& moveS1, bool& moveS2, bool& moveS3, int& getS1, int& getS2, int& getS3) {
-	getS1 = (moveS1) ? ((moveS2 && moveS3) ? 7 : ((moveS2 || moveS3) ? 3 : 0)) : ((moveS2 && moveS3) ? 9 : ((moveS2 || moveS3) ? 5 : 1));
-	getS2 = (moveS2) ? ((moveS1 && moveS3) ? 7 : ((moveS1 || moveS3) ? 3 : 0)) : ((moveS1 && moveS3) ? 9 : ((moveS1 || moveS3) ? 5 : 1));
-	getS3 = (moveS3) ? ((moveS2 && moveS1) ? 7 : ((moveS2 || moveS1) ? 3 : 0)) : ((moveS2 && moveS1) ? 9 : ((moveS2 || moveS1) ? 5 : 1));
+void Game::GetGets(const char* file) {
+	bool found = false;
+	char c1, c2, c3;
+	std::ifstream matrix(file);
+	while (!found) {
+		matrix >> c1 >> c2 >> c3 >> getS1 >> getS2 >> getS3;
+		if (((moveS1 && (c1 == 'c')) || (!moveS1 && (c1 == 'd')))
+			&& ((moveS2 && (c2 == 'c')) || (!moveS2 && (c2 == 'd')))
+			&& ((moveS3 && (c3 == 'c')) || (!moveS3 && (c3 == 'd')))) {
+			found = true;
+		}
+	}
+	matrix.close();
 }
 
-void Game::GetPoints(int& pointS1, int& pointS2, int& pointS3, int& getS1, int& getS2, int& getS3) {
+std::string Game::GetName() {
+	return name;
+}
+
+void Game::GetPoints() {
 	pointS1 += getS1;
 	pointS2 += getS2;
 	pointS3 += getS3;
 }
 
-void Game::PutRes(bool& moveS1, bool& moveS2, bool& moveS3, Strategy* S1, Strategy* S2, Strategy* S3) {
+void Game::PutRes(Strategy* S1, Strategy* S2, Strategy* S3) {
 	S1->getRes(moveS2, moveS3);
 	S2->getRes(moveS1, moveS3);
 	S3->getRes(moveS1, moveS2);
 }
 
-void Game::PrintRes(int& pointS1, int& pointS2, int& pointS3, Strategy* S1, Strategy* S2, Strategy* S3) {
-	std::cout << S1->getName() << " - " << pointS1 << "; " << S2->getName() << " - " << pointS2 <<
-		"; " << S3->getName() << " - " << pointS3 << std::endl;
-}
-
-void Game::SetWinners(int& pointS1, int& pointS2, int& pointS3, int& S1, int& S2, int& S3) {
+void Game::SetWinners(int& S1, int& S2, int& S3) {
 	bool max1 = true, max2 = false, max3 = false;
 	int max = pointS1;
 	if (max <= pointS2) {
@@ -69,4 +89,12 @@ int Game::GetPoint(int i) {
 	case 3:
 		return pointS3;
 	}
+}
+
+void Game::SetSteps(int& steps) {
+	this->steps = steps;
+}
+
+void Game::SetStrategys(std::vector<Strategy*>& strategys) {
+	this->strategys = strategys;
 }
