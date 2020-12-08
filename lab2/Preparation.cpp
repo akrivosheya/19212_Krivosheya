@@ -54,10 +54,11 @@ bool Preparation::SetOptions(const int& size, std::string& mode, int& steps, int
 	return true;
 }
 
-Game* Preparation::Prepare(int& steps, std::string& mode, std::vector<Strategy*>& strategys, int& argc, char* argv[]) {
+Game* Preparation::Prepare(int& argc, char* argv[]) {
 	int i = 1;
-	steps = 0;
-	mode = "IsNotSet";
+	int steps = 0;
+	std::string mode = "IsNotSet";
+	std::vector<Strategy*> strategys;
 	for (; (i <= argc - 1) && !IsMode(argv[i]) && !IsDigit(argv[i]); ++i) {
 		strategys.push_back(Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[i]));
 		if (!strategys[i - 1]) {
@@ -69,5 +70,10 @@ Game* Preparation::Prepare(int& steps, std::string& mode, std::vector<Strategy*>
 		return nullptr;
 	}
 
-	return Factory<Game, std::string, Game* (*)()>::getInstance()->makeStrategy(mode);
+	Game* G = Factory<Game, std::string, Game* (*)()>::getInstance()->makeStrategy(mode);
+	if (G) {
+		G->SetSteps(steps);
+		G->SetStrategys(strategys);
+	}
+	return G;
 }
