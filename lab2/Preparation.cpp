@@ -75,5 +75,6 @@ Game* Preparation::Prepare(int& argc, char* argv[]) {
 		G->SetSteps(steps);
 		G->SetStrategys(strategys);
 	}
+	strategys.clear();
 	return G;
 }
