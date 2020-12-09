@@ -8,7 +8,7 @@
 class Game {
 public:
 	Game();
-	virtual ~Game() {}
+	virtual ~Game();
 	virtual void Play(const char* file, Printer& print){}
 	int GetPoint(int i);
 	std::string GetName();
