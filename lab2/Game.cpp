@@ -12,6 +12,10 @@ Game::Game(): steps(0),
 			pointS2(0), 
 			pointS3(0){}
 
+Game::~Game() {
+	strategys.clear();
+}
+
 std::string Game::Moves() {
 	std::string m1 = ((moveS1) ? "C" : "D");
 	std::string m2 = ((moveS2) ? "C" : "D");
