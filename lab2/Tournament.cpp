@@ -21,15 +21,16 @@ void Tournament::Play(const char* file, Printer& print) {
 		for (int j = i + 1; j < limit; ++j) {
 			for (int k = j + 1; k < limit; ++k) {
 				for (int s = 0; s < steps; ++s) {
-					GetMoves(strategys[i], strategys[j], strategys[k]);
-					GetGets(file);
-					GetPoints();
-					PutRes(strategys[i], strategys[j], strategys[k]);
+					SetDecisions(strategys[i], strategys[j], strategys[k]);
+					SetGets(file);
+					SetPoints();
+					GiveDecisions(strategys[i], strategys[j], strategys[k]);
 				}
 				SetWinners(victories[i], victories[j], victories[k]);
 				print.PrintRes(strategys[i], strategys[j], strategys[k], pointS1, pointS2, pointS3);
 				Reload(strategys[i], strategys[j], strategys[k]);
 				pointS1 = pointS2 = pointS3 = 0;
+				++tournamentCount;//для тестов
 			}
 		}
 	}
