@@ -18,11 +18,11 @@ void Detailed::Play(const char* file, Printer& print) {
 	std::string step;
 	std::cin >> step;
 	while (step != "quit") {
-		GetMoves(strategys[0], strategys[1], strategys[2]);
-		GetGets(file);
-		GetPoints();
-		PutRes(strategys[0], strategys[1], strategys[2]);
-		print.PrintDetailedRes(moveS1, moveS2, moveS3,
+		SetDecisions(strategys[0], strategys[1], strategys[2]);
+		SetGets(file);
+		SetPoints();
+		GiveDecisions(strategys[0], strategys[1], strategys[2]);
+		print.PrintDetailedRes(decisionS1, decisionS2, decisionS3,
 			pointS1, pointS2, pointS3,
 			getS1, getS2, getS3);
 		std::cin >> step;
