@@ -10,11 +10,11 @@ namespace {
 	bool b = g();
 }
 
-void BackAndForth::getRes(bool s1, bool s2) {
+void BackAndForth::putDecisions(bool decision1, bool decision2) {
 	return;
 }
 
-bool BackAndForth::makeMove() {
+bool BackAndForth::makeDecision() {
 	cORd = !cORd;
 	return cORd;
 }
@@ -25,7 +25,7 @@ std::string BackAndForth::getName() {
 }
 
 void BackAndForth::reload() {
-	cORd = c;
+	cORd = help;
 }
 
 Strategy* createBackAndForth() {
