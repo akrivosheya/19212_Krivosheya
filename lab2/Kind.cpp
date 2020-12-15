@@ -10,12 +10,12 @@ namespace{
 	bool b = g();
 }
 
-void Kind::getRes(bool s1, bool s2) {
+void Kind::putDecisions(bool decision1, bool decision2) {
 	return;
 }
 
-bool Kind::makeMove() {
-	return c;
+bool Kind::makeDecision() {
+	return help;
 }
 
 std::string Kind::getName() {
