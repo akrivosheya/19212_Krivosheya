@@ -16,10 +16,20 @@ Fast::Fast(){
 
 void Fast::Play(const char* file, Printer& print) {
 	for (int j = 0; j < steps; ++j) {
-		GetMoves(strategys[0], strategys[1], strategys[2]);
-		GetGets(file);
-		GetPoints();
-		PutRes(strategys[0], strategys[1], strategys[2]);
+		SetDecisions(strategys[0], strategys[1], strategys[2]);
+		//для тестов
+		if (j > 15) {
+			traitor1 &= !decisionS1;
+			traitor2 &= !decisionS2;
+			titfortat1 &= (j % 2) ? decisionS1 : !decisionS1;
+			kind1 &= decisionS1;
+			kind2 &= decisionS2;
+			backandforth3 &= (j % 2) ? !decisionS3 : decisionS3;
+		}
+		//------------
+		SetGets(file);
+		SetPoints();
+		GiveDecisions(strategys[0], strategys[1], strategys[2]);
 	}
 	print.PrintRes(strategys[0], strategys[1], strategys[2], pointS1, pointS2, pointS3);
 }
