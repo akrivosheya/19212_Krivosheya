@@ -5,19 +5,26 @@
 #include <QPen>
 #include <QPainter>
 #include <QMouseEvent>
+#include <vector>
 
 class RenderArea: public QWidget{
+    Q_OBJECT
 public:
-    explicit RenderArea();
+    RenderArea(std::vector<std::vector<bool> >& matrix_);
     QSize minimumSizeHint() const override;
-    int GetX();
-    int GetY();
     void mousePressEvent(QMouseEvent* event) override;
-protected:
-    void paintEvent(QPaintEvent *event) override;
+
+public slots:
+    void Update();
+
+signals:
+    void Clicked(int idx1, int idx2);
+
 private:
-    int pressedX;
-    int pressedY;
+    void paintEvent(QPaintEvent *event) override;
+    std::vector<std::vector<bool> >& matrix;
+    int rectWidth;
+    int rectHeight;
 };
 
 #endif // RENDERAREA_H
