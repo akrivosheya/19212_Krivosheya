@@ -10,12 +10,12 @@ namespace {
 	bool b = g();
 }
 
-void TitForTatKind::getRes(bool s1, bool s2) {
-	betrayed = s1 | s2;
+void TitForTatKind::putDecisions(bool decision1, bool decision2) {
+	betrayed = decision1 | decision2;
 	return;
 }
 
-bool TitForTatKind::makeMove() {
+bool TitForTatKind::makeDecision() {
 	return betrayed;
 }
 
