@@ -10,12 +10,12 @@ namespace {
 	bool b = g();
 }
 
-void Traitor::getRes(bool s1, bool s2) {
+void Traitor::putDecisions(bool decision1, bool decision2) {
 	return;
 }
 
-bool Traitor::makeMove() {
-	return d;
+bool Traitor::makeDecision() {
+	return betray;
 }
 
 std::string Traitor::getName() {
