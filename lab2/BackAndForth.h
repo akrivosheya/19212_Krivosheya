@@ -2,12 +2,13 @@
 
 class BackAndForth : public Strategy {
 public:
-	void getRes(bool s1, bool s2) override;
-	bool makeMove() override;
+	virtual ~BackAndForth() = default;
+	void putDecisions(bool decision1, bool decision2) override;
+	bool makeDecision() override;
 	std::string getName() override;
 	void reload() override;
 private:
-	bool cORd = c;
+	bool cORd = help;
 	std::string name = "BackAndForth";
 };
 
