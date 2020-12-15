@@ -2,8 +2,8 @@
 
 class Kind : public Strategy {
 public:
-	void getRes(bool s1, bool s2) override;
-	bool makeMove() override;
+	void putDecisions(bool decision1, bool decision2) override;
+	bool makeDecision() override;
 	std::string getName() override;
 	void reload() override {};
 private:
