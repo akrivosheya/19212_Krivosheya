@@ -4,7 +4,7 @@
 
 class Preparation {
 public:
-	Game* Prepare(int& steps, std::string& mode, std::vector<Strategy*>& strategys, int& argc, char* argv[]);
+	Game* Prepare(int& argc, char* argv[]);
 private:
 	bool IsMode(char* str);
 	bool IsDigit(std::string str);
