@@ -21,10 +21,10 @@ void Fast::Play(const char* file, Printer& print) {
 		if (j > 15) {
 			traitor1 &= !decisionS1;
 			traitor2 &= !decisionS2;
-			titfortat1 &= (j % 2) ? decisionS1 : !decisionS1;
+			titfortat1 &= (j % 2) ? !decisionS1 : decisionS1;
 			kind1 &= decisionS1;
 			kind2 &= decisionS2;
-			backandforth3 &= (j % 2) ? !decisionS3 : decisionS3;
+			backandforth3 &= (j % 2) ? decisionS3 : !decisionS3;
 		}
 		//------------
 		SetGets(file);
