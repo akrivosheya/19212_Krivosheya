@@ -5,9 +5,11 @@
 #include <QLabel>
 #include <QPushButton>
 #include <QLineEdit>
+
 #include "RenderArea.h"
 #include "Game.h"
-#include "Test.h"
+#include "Translater.h"
+#include "DataMaster.h"
 
 class Window : public QWidget
 {
@@ -15,25 +17,28 @@ class Window : public QWidget
 
 public:
     Window();
-    ~Window();
+    ~Window() = default;
 
 public slots:
-    void GiveRulesForGame();
+    void SetRulesForGame();
+    void ResizeGame();
+    void SaveGame();
+    void LoadGame();
 
 private:
-    Game* game;
-    RenderArea* renderArea;
-    QPushButton *playButton;
-    QPushButton *stopButton;
-    QPushButton *saveButton;
-    QPushButton *loadButton;
-    QPushButton *setRulesButton;
-    QPushButton *setSizeButton;
-    QLineEdit *modeLine;
-    QLineEdit *widthLine;
-    QLineEdit *heightLine;
-    QLabel* modeLabel;
-    QLabel* widthLabel;
-    QLabel* heightLabel;
+    std::unique_ptr<Game> game;
+    std::unique_ptr<Translater> translater;
+    std::unique_ptr<DataMaster> dataMaster;
+    std::unique_ptr<RenderArea> renderArea;
+    std::unique_ptr<QPushButton> playButton;
+    std::unique_ptr<QPushButton> stopButton;
+    std::unique_ptr<QPushButton> saveButton;
+    std::unique_ptr<QPushButton> loadButton;
+    std::unique_ptr<QPushButton> clearButton;
+    std::unique_ptr<QPushButton> setRulesButton;
+    std::unique_ptr<QPushButton> setSizeButton;
+    std::unique_ptr<QLineEdit> modeLine;
+    std::unique_ptr<QLineEdit> widthLine;
+    std::unique_ptr<QLineEdit> heightLine;
 };
 #endif
