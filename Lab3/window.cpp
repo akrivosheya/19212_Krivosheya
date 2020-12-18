@@ -18,6 +18,8 @@ Window::Window()
     modeLine.reset(new QLineEdit());
     widthLine.reset(new QLineEdit());
     heightLine.reset(new QLineEdit());
+    widthLabel.reset(new QLabel(tr("Width:"), nullptr));
+    heightLabel.reset(new QLabel(tr("Height:"), nullptr));
 
     QGridLayout *mainLayout = new QGridLayout;
     mainLayout->addWidget(playButton.get(), 0, 0);
@@ -27,10 +29,12 @@ Window::Window()
     mainLayout->addWidget(clearButton.get(), 0, 4);
     mainLayout->addWidget(setRulesButton.get(), 0, 5, 1, 2);
     mainLayout->addWidget(setSizeButton.get(), 2, 5, 1, 2);
-    mainLayout->addWidget(widthLine.get(), 3, 5);
-    mainLayout->addWidget(heightLine.get(), 3, 6);
+    mainLayout->addWidget(widthLabel.get(), 3, 5);
+    mainLayout->addWidget(heightLabel.get(), 3, 6);
+    mainLayout->addWidget(widthLine.get(), 4, 5);
+    mainLayout->addWidget(heightLine.get(), 4, 6);
     mainLayout->addWidget(modeLine.get(), 1, 5, 1, 2);
-    mainLayout->addWidget(renderArea.get(), 1, 0, 4, 5);
+    mainLayout->addWidget(renderArea.get(), 1, 0, 20, 5);
     setLayout(mainLayout);
     setWindowTitle(tr("The Life"));
 
