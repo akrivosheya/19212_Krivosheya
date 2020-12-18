@@ -1,59 +1,87 @@
-#include "window.h"
 #include <QGridLayout>
+
+#include "window.h"
 
 Window::Window()
 {
-    game = new Game();
-    renderArea = new RenderArea(game->GetMatrix());
-    playButton = new QPushButton(tr("&Play"));
-    stopButton = new QPushButton(tr("&Stop"));
-    saveButton = new QPushButton(tr("&Save"));
-    loadButton = new QPushButton(tr("&Load"));
-    setRulesButton = new QPushButton(tr("&Set rules"));
-    setSizeButton = new QPushButton(tr("&Set size"));
-    modeLine = new QLineEdit();
-    widthLine = new QLineEdit();
-    heightLine = new QLineEdit();
+    game.reset(new Game());
+    translater.reset(new Translater());
+    dataMaster.reset(new DataMaster());
+    renderArea.reset(new RenderArea(game->GetMatrix()));
+    playButton.reset(new QPushButton(tr("&Play")));
+    stopButton.reset(new QPushButton(tr("&Stop")));
+    saveButton.reset(new QPushButton(tr("&Save")));
+    loadButton.reset(new QPushButton(tr("&Load")));
+    clearButton.reset(new QPushButton(tr("&Clear")));
+    setRulesButton.reset(new QPushButton(tr("&Set rules")));
+    setSizeButton.reset(new QPushButton(tr("&Set size")));
+    modeLine.reset(new QLineEdit());
+    widthLine.reset(new QLineEdit());
+    heightLine.reset(new QLineEdit());
+
     QGridLayout *mainLayout = new QGridLayout;
-    mainLayout->addWidget(playButton, 0, 0);
-    mainLayout->addWidget(stopButton, 0, 1);
-    mainLayout->addWidget(saveButton, 0, 2);
-    mainLayout->addWidget(loadButton, 0, 3);
-    mainLayout->addWidget(setRulesButton, 0, 4);
-    mainLayout->addWidget(setSizeButton, 0, 5);
-    mainLayout->addWidget(widthLine, 1, 5);
-    mainLayout->addWidget(heightLine, 2, 5);
-    mainLayout->addWidget(modeLine, 3, 5);
-    mainLayout->addWidget(renderArea, 1, 0, 4, 5);
+    mainLayout->addWidget(playButton.get(), 0, 0);
+    mainLayout->addWidget(stopButton.get(), 0, 1);
+    mainLayout->addWidget(saveButton.get(), 0, 2);
+    mainLayout->addWidget(loadButton.get(), 0, 3);
+    mainLayout->addWidget(clearButton.get(), 0, 4);
+    mainLayout->addWidget(setRulesButton.get(), 0, 5, 1, 2);
+    mainLayout->addWidget(setSizeButton.get(), 2, 5, 1, 2);
+    mainLayout->addWidget(widthLine.get(), 3, 5);
+    mainLayout->addWidget(heightLine.get(), 3, 6);
+    mainLayout->addWidget(modeLine.get(), 1, 5, 1, 2);
+    mainLayout->addWidget(renderArea.get(), 1, 0, 4, 5);
     setLayout(mainLayout);
     setWindowTitle(tr("The Life"));
-    connect(renderArea, &RenderArea::Clicked,
-            game, &Game::ChangeRect);
-    connect(game, &Game::Changed,
-            renderArea, &RenderArea::Update);
-    connect(playButton, &QPushButton::pressed,
-            game, &Game::Activate);
-    connect(stopButton, &QPushButton::pressed,
-            game, &Game::Diactivate);
-    connect(setRulesButton, &QPushButton::pressed,
-            this, &Window::GiveRulesForGame);
+
+    connect(renderArea.get(), &RenderArea::Clicked,
+            game.get(), &Game::ChangeRect);
+    connect(game.get(), &Game::Changed,
+            renderArea.get(), &RenderArea::Update);
+    connect(playButton.get(), &QPushButton::pressed,
+            game.get(), &Game::Activate);
+    connect(stopButton.get(), &QPushButton::pressed,
+            game.get(), &Game::Diactivate);
+    connect(clearButton.get(), &QPushButton::pressed,
+            game.get(), &Game::Clear);
+    connect(setRulesButton.get(), &QPushButton::pressed,
+            this, &Window::SetRulesForGame);
+    connect(setSizeButton.get(), &QPushButton::pressed,
+            this, &Window::ResizeGame);
+    connect(translater.get(), &Translater::TranslatedRules,
+            game.get(), &Game::SetRules);
+    connect(translater.get(), &Translater::TranslatedSize,
+            game.get(), &Game::Resize);
+    connect(saveButton.get(), &QPushButton::pressed,
+            this, &Window::SaveGame);
+    connect(loadButton.get(), &QPushButton::pressed,
+            this, &Window::LoadGame);
 }
 
-Window::~Window()
-{
-    delete game;
-    delete renderArea;
-    delete playButton;
-    delete stopButton;
-    delete saveButton;
-    delete loadButton;
-    delete setRulesButton;
-    delete setSizeButton;
-    delete modeLine;
-    delete widthLine;
-    delete heightLine;
+void Window::SetRulesForGame(){
+    if(game->GetPlay()){
+        return;
+    }
+    translater->TranslateRules(modeLine->text());
 }
 
-void Window::GiveRulesForGame(){
-    game->SetRules(modeLine->text());
+void Window::ResizeGame(){
+    if(game->GetPlay()){
+        return;
+    }
+    translater->TranslateSize(widthLine->text(), heightLine->text());
+}
+
+void Window::SaveGame(){
+    if(game->GetPlay()){
+        return;
+    }
+    dataMaster->Save(game->GetMatrix(), game->GetRules());
+}
+
+void Window::LoadGame(){
+    if(game->GetPlay()){
+        return;
+    }
+    dataMaster->Load(game->GetMatrix(), game->GetRules());
 }
