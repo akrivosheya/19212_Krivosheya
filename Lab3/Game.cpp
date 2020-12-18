@@ -1,13 +1,13 @@
-#include "Game.h"
 #include <cctype>
 #include <cstdlib>
+#include <algorithm>
+#include <QMessageBox>
+
+#include "Game.h"
 
 Game::Game(int width, int height, int rule1, int rule2, int rule3):
             matrix(height, std::vector<bool>(width)),
-            rules{rule1, rule2, rule3},
-            timerId(0),
-            play(false),
-            haveTimerId(false){}
+            rules{rule1, rule2, rule3}{}
 
 
 void Game::timerEvent(QTimerEvent *event){
@@ -46,13 +46,14 @@ std::vector<std::vector<bool> >& Game::GetMatrix(){
     return matrix;
 }
 
-void Game::SetRules(QString qtRules){
-    std::string rules = qtRules.toLocal8Bit().constData();
-    if(rules.size() != rulesSize){
-        return;
-    }
-    std::vector<int> newRules(3);
-    if()
+void Game::SetRules(std::vector<int>& newRules){
+    rules = std::move(newRules);
+    emit Changed();
+}
+
+void Game::Resize(std::vector<std::vector<bool> >& newMatrix){
+    matrix = std::move(newMatrix);
+    emit Changed();
 }
 
 
@@ -78,8 +79,22 @@ void Game::Diactivate(){
     }
 }
 
-void Game::Resize(int width, int height){
+void Game::Clear(){
+    if(play){
+        return;
+    }
+    for(auto iter = matrix.begin(); iter != matrix.end(); ++iter){
+        std::fill(iter->begin(), iter->end(), 0);
+    }
+    emit Changed();
+}
 
+bool Game::GetPlay(){
+    return play;
+}
+
+std::vector<int>& Game::GetRules(){
+    return rules;
 }
 
 
