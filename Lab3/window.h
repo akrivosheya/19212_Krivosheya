@@ -40,5 +40,7 @@ private:
     std::unique_ptr<QLineEdit> modeLine;
     std::unique_ptr<QLineEdit> widthLine;
     std::unique_ptr<QLineEdit> heightLine;
+    std::unique_ptr<QLabel> widthLabel;
+    std::unique_ptr<QLabel> heightLabel;
 };
 #endif
