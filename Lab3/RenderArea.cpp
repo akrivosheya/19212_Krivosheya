@@ -21,13 +21,13 @@ void RenderArea::mousePressEvent(QMouseEvent* event){
 }
 
 void RenderArea::paintEvent(QPaintEvent*){
-    QRect rect(0, 0, width() - 1, height() - 1);
+    rectHeight = (int)height() / matrix.size();
+    rectWidth = (int)width() / matrix[0].size();
+    QRect rect(0, 0, rectWidth * matrix[0].size(), rectHeight * matrix.size());
     QPainter painter(this);
     painter.setBrush(Qt::gray);
     painter.setPen(Qt::darkGreen);
     painter.drawRect(rect);
-    rectHeight = (int)height() / matrix.size();
-    rectWidth = (int)width() / matrix[0].size();
     for (int i = rectWidth; i < width(); i += rectWidth){
         painter.drawLine(i, 0, i, rectHeight * matrix.size());
     }
