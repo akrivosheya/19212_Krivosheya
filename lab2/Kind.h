@@ -10,4 +10,6 @@ private:
 	std::string name = "Kind";
 };
 
-Strategy* createKind();
+Strategy* createKind() {
+	return new Kind;
+}
