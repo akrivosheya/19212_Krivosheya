@@ -1,31 +1,35 @@
 #pragma once
-#include <string>
-#include "Strategy.h"
-#include "Printer.h"
 #include <vector>
 #include <fstream>
+#include <string>
+
+#include "Strategy.h"
+#include "Printer.h"
 
 class Game {
 public:
 	Game();
 	virtual ~Game();
-	virtual void Play(const char* file, Printer& print){}
-	void SetSteps(int& steps);
-	void SetStrategys(std::vector<Strategy*>& strategys);
+	virtual void Play(Printer& print){}
+	void SetSteps(int steps);
+	void SetStrategys(std::vector<Strategy*>&& strategys);
+	void SetRules(std::ifstream& is);
 protected:
-	std::string Decisions();
 	void SetDecisions(Strategy* S1, Strategy* S2, Strategy* S3);
-	void SetGets(const char* file);
+	void SetGets();
 	void SetPoints();
 	void GiveDecisions(Strategy* S1, Strategy* S2, Strategy* S3);
 	void SetWinners(int& S1, int& S2, int& S3);
-	int steps;
+	int steps = 0;
 	std::vector<Strategy*> strategys;
-	bool decisionS1, decisionS2, decisionS3;
-	int getS1, getS2, getS3;
-	int pointS1, pointS2, pointS3;
+	std::vector<bool> decisions;
+	std::vector<int> gets;
+	std::vector<int> points;
+	std::vector<int> rules;
 	//для тестов
 	std::string name;
-	int tournamentCount;
-	bool traitor1, traitor2, kind1, kind2, backandforth3, titfortat1;
+	int tournamentCountForTest = 0;
+	bool traitor1ForTest = true, traitor2ForTest = true;
+	bool kind1ForTest = true, kind2ForTest = true;
+	bool backandforth3ForTest = true, titfortat1ForTest = true;
 };
