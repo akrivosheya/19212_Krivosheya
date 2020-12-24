@@ -9,6 +9,5 @@ public:
 	virtual std::string getName() = 0;
 	virtual void reload() = 0;
 protected:
-	static constexpr bool help = true;
-	static constexpr bool betray = false;
+	enum decision{help = true, betray = false};
 };
