@@ -8,7 +8,7 @@ public:
 private:
 	bool IsMode(char* str);
 	bool IsDigit(std::string str);
-	void SetModeOptional(const int& size, std::string& mode);
-	bool SetOptions(const int& size, std::string& mode, int& steps, int& i, const int& argc, char* argv[]);
+	void SetModeOptional(int size, std::string& mode);
+	bool SetOptions(int size, std::string& mode, int& steps, int i, int argc, char* argv[]);
 	static constexpr int optionalSteps = 100;
 };
