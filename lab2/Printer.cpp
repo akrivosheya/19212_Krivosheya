@@ -1,23 +1,24 @@
 #include "Printer.h"
 
-void Printer::PrintRes(Strategy* S1, Strategy* S2, Strategy* S3, 
-	int pointS1, int pointS2, int pointS3) {
-	std::cout << S1->getName() << " - " << pointS1 << "; "
-		<< S2->getName() << " - " << pointS2 <<
-		"; " << S3->getName() << " - " << pointS3 << std::endl;
+void Printer::PrintRes(std::vector<Strategy*>& strategys,
+	std::vector<int> points, int i, int j, int k) {
+	std::cout << strategys[i]->getName() << " - " << points[0] << "; "
+		<< strategys[j]->getName() << " - " << points[1] <<
+		"; " << strategys[k]->getName() << " - " << points[2] << std::endl;
 }
 
-void Printer::PrintTournamentRes(std::vector<Strategy*>& strategys, std::vector<int>& victories) {
+void Printer::PrintTournamentRes(std::vector<Strategy*>& strategys, 
+	std::vector<int>& victories) {
 	std::cout << std::endl << "Results:" << std::endl;
 	for (int i = 0; i < strategys.size(); ++i) {
 		std::cout << i << ") " << strategys[i]->getName() << " - " << victories[i] << std::endl;
 	}
 }
 
-void Printer::PrintDetailedRes(bool moveS1, bool moveS2, bool moveS3,
-	int pointS1, int pointS2, int pointS3,
-	int getS1, int getS2, int getS3) {
-	std::cout << ((moveS1) ? "C" : "D") << " " << ((moveS2) ? "C" : "D") << " " << ((moveS3) ? "C" : "D")
-		<< "  =>  " << getS1 << " " << getS2 << " " << getS3
-		<< "  =>  " << pointS1 << " " << pointS2 << " " << pointS3 << std::endl;
+void Printer::PrintDetailedRes(std::vector<bool> decisions, 
+	std::vector<int> gets, std::vector<int> points) {
+	std::cout << ((decisions[0]) ? "C" : "D") << " " 
+		<< ((decisions[1]) ? "C" : "D") << " " << ((decisions[2]) ? "C" : "D")
+		<< "  =>  " << gets[0] << " " << gets[1] << " " << gets[2]
+		<< "  =>  " << points[0] << " " << points[1] << " " << points[2] << std::endl;
 }
