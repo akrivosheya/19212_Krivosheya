@@ -1,8 +1,12 @@
+#include <QMessageBox>
+
 #include "Translater.h"
 
 void Translater::TranslateRules(const QString& rulesQS){
     std::string rules = rulesQS.toLocal8Bit().constData();
     if(rules.size() != rulesSize){
+        QMessageBox::information(nullptr, tr("Error"),
+                                "Wrong format of rules");
         return;
     }
     std::vector<int> newRules(3);
@@ -10,6 +14,8 @@ void Translater::TranslateRules(const QString& rulesQS){
         newRules[0] = rules[1] - '0';
     }
     else{
+        QMessageBox::information(nullptr, tr("Error"),
+                                "Wrong format of rules");
         return;
     }
     if(rules[2] == '/' && rules[3] == 'S'
@@ -19,6 +25,8 @@ void Translater::TranslateRules(const QString& rulesQS){
         newRules[2] = rules[5] - '0';
     }
     else{
+        QMessageBox::information(nullptr, tr("Error"),
+                                "Wrong format of rules");
         return;
     }
 
@@ -28,16 +36,18 @@ void Translater::TranslateRules(const QString& rulesQS){
 void Translater::TranslateSize(const QString& widthQS, const QString& heightQS){
     std::string widthStr = widthQS.toLocal8Bit().constData();
     std::string heightStr = heightQS.toLocal8Bit().constData();
-    widthStr.erase( std::remove( widthStr.begin(), widthStr.end(), ' ' ), widthStr.end() );
-    heightStr.erase( std::remove( heightStr.begin(), heightStr.end(), ' ' ), heightStr.end() );
     if(widthStr.size() > 3 || heightStr.size() > 3 ||
             widthStr.size() == 0 || heightStr.size() == 0 ||
             !IsNumber(widthStr) || !IsNumber(heightStr)){
+        QMessageBox::information(nullptr, tr("Error"),
+                                "Wrong format of size");
         return;
     }
     int newWidth = stoi(widthStr);
     int newHeight = stoi(heightStr);
     if(newWidth == 0 || newHeight == 0 || newWidth > 100 || newHeight > 100){
+        QMessageBox::information(nullptr, tr("Error"),
+                                "Wrong format of size");
         return;
     }
     std::vector<std::vector<bool> > newMatrix(newHeight, std::vector<bool>(newWidth));
