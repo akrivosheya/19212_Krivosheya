@@ -2,295 +2,287 @@
 #include "Game.h"
 #include "Preparation.h"
 #include "Display.h"
-#include <iostream>
 
-Display D;
-
-int Launch(int argc, char* argv[], Game** G) {
-	if (argc < 4) return -1;
+Game* Launch(int argc, char* argv[], int& res) {
+	if (argc < 4) { 
+		res = -1;
+		return nullptr; 
+	}
 	Preparation P;
-	*G = P.Prepare(argc, argv);
-	if (!(*G)) {
-		return -1;
+	std::unique_ptr<Game> G(P.Prepare(argc, argv));
+	if (!G.get()) {
+		res = -1;
+		return nullptr;
 	}
 	Printer Print;
-	(*G)->Play("M.txt", Print);
-	return 0;
+	std::ifstream file;
+	file.open("Matrix.txt");
+	G->SetRules(file);
+	G->Play(Print);
+	res = 0;
+	return G.release();
 }
 
-TEST(Options, STFTfast) {
-	char* argv[] = { "prog", "southback", "traitor", "backandforth", "fast", "50" };
-	Game* G = nullptr;
-	int res = Launch(6, argv, &G);
-	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Fast");
-	EXPECT_EQ(D.GetSteps(G), 50);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	delete G;
+class TestGame : public ::testing::Test {
+protected:
+	Display D;
+	int res;
+	std::unique_ptr<Game> G;
+};
+
+TEST(op, pf) {
+	EXPECT_TRUE(true);
 }
-TEST(Options, Fast50) {
+
+TEST_F(TestGame, Southfast) {
+	char* argv[] = { "prog", "southback", "traitor", "backandforth", 
+		"fast", "50" };
+	G.reset(Launch(6, argv, res));
+	EXPECT_EQ(res, 0);
+	EXPECT_EQ(D.GetName(G.get()), "Fast");
+	EXPECT_EQ(D.GetSteps(G.get()), 50);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+}
+
+TEST_F(TestGame, Fast50) {
 	char* argv[] = { "prog", "kind", "traitor", "backandforth", "fast", "50" };
-	Game* G = nullptr;
-	int res = Launch(6, argv, &G);
+	G.reset(Launch(6, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Fast");
-	EXPECT_EQ(D.GetSteps(G), 50);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Fast");
+	EXPECT_EQ(D.GetSteps(G.get()), 50);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
 }
 
-TEST(Options, Fast) {
+TEST_F(TestGame, Fast) {
 	char* argv[] = { "prog", "kind", "traitor", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
+	G.reset(Launch(5, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Fast");
-	EXPECT_EQ(D.GetSteps(G), 100);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Fast");
+	EXPECT_EQ(D.GetSteps(G.get()), 100);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
 }
 
-TEST(Options, Detailed150) {
-	char* argv[] = { "prog", "southtitfortat", "titfortatkind", "titfortatanger", "detailed", "150" };
-	Game* G = nullptr;
-	int res = Launch(6, argv, &G);
+TEST_F(TestGame, Detailed150) {
+	char* argv[] = { "prog", "southtitfortat", "titfortatkind", 
+		"titfortatanger", "detailed", "150" };
+	G.reset(Launch(6, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Detailed");
-	EXPECT_EQ(D.GetSteps(G), 150);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthTitForTat");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "TitForTatKind");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "TitForTatAnger");
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Detailed");
+	EXPECT_EQ(D.GetSteps(G.get()), 150);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthTitForTat");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "TitForTatKind");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "TitForTatAnger");
 }
 
-TEST(Options, Tournament90) {
-	char* argv[] = { "prog", "kind", "traitor", "backandforth", "southback", "titfortatkind", "titfortatanger", "tournament", "90" };
-	Game* G = nullptr;
-	int res = Launch(9, argv, &G);
+TEST_F(TestGame, Tournament90) {
+	char* argv[] = { "prog", "kind", "backandforth", "traitor", 
+		"southback", "titfortatkind", "titfortatanger", "tournament", "90" };
+	G.reset(Launch(9, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Tournament");
-	EXPECT_EQ(D.GetSteps(G), 90);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_EQ(D.GetStrategys(G)[3]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[4]->getName(), "TitForTatKind");
-	EXPECT_EQ(D.GetStrategys(G)[5]->getName(), "TitForTatAnger");
-	EXPECT_EQ(D.GetTournamentCount(G), 6 * 5 * 4 / 3 / 2);
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Tournament");
+	EXPECT_EQ(D.GetSteps(G.get()), 90);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "BackAndForth");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[3]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[4]->getName(), "TitForTatKind");
+	EXPECT_EQ(D.GetStrategys(G.get())[5]->getName(), "TitForTatAnger");
+	EXPECT_EQ(D.GetTournamentCount(G.get()), 6 * 5 * 4 / 3 / 2);
 }
 
-TEST(Options, OptionalDetailed) {
+TEST_F(TestGame, OptionalDetailed) {
 	char* argv[] = { "prog", "southback", "southback", "titfortatanger" };
-	Game* G = nullptr;
-	int res = Launch(4, argv, &G);
+	G.reset(Launch(4, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Detailed");
-	EXPECT_EQ(D.GetSteps(G), 100);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "TitForTatAnger");
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Detailed");
+	EXPECT_EQ(D.GetSteps(G.get()), 100);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "TitForTatAnger");
 }
 
-TEST(Options, OptionalTournament60) {
-	char* argv[] = { "prog", "southback", "southback", "titfortatanger", "traitor", "southtitfortat", "60" };
-	Game* G = nullptr;
-	int res = Launch(7, argv, &G);
+TEST_F(TestGame, OptionalTournament60) {
+	char* argv[] = { "prog", "southback", "southback", "titfortatanger", 
+		"traitor", "southtitfortat", "60" };
+	G.reset(Launch(7, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Tournament");
-	EXPECT_EQ(D.GetSteps(G), 60);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "TitForTatAnger");
-	EXPECT_EQ(D.GetStrategys(G)[3]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[4]->getName(), "SouthTitForTat");
-	EXPECT_EQ(D.GetTournamentCount(G), 5 * 4 / 2);
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Tournament");
+	EXPECT_EQ(D.GetSteps(G.get()), 60);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "TitForTatAnger");
+	EXPECT_EQ(D.GetStrategys(G.get())[3]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[4]->getName(), "SouthTitForTat");
+	EXPECT_EQ(D.GetTournamentCount(G.get()), 5 * 4 / 2);
 }
 
-TEST(Options, OptionalTournament) {
-	char* argv[] = { "prog", "southback", "southback", "titfortatanger", "traitor", "southtitfortat", "kind" };
-	Game* G = nullptr;
-	int res = Launch(7, argv, &G);
+TEST_F(TestGame, OptionalTournament) {
+	char* argv[] = { "prog", "southback", "southback", "titfortatanger",
+		"traitor", "southtitfortat", "kind" };
+	G.reset(Launch(7, argv, res));
 	EXPECT_EQ(res, 0);
-	EXPECT_EQ(D.GetName(G), "Tournament");
-	EXPECT_EQ(D.GetSteps(G), 100);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "TitForTatAnger");
-	EXPECT_EQ(D.GetStrategys(G)[3]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[4]->getName(), "SouthTitForTat");
-	EXPECT_EQ(D.GetStrategys(G)[5]->getName(), "Kind");
-	EXPECT_EQ(D.GetTournamentCount(G), 6 * 5 * 4 / 3 / 2);
-	delete G;
+	EXPECT_EQ(D.GetName(G.get()), "Tournament");
+	EXPECT_EQ(D.GetSteps(G.get()), 100);
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "TitForTatAnger");
+	EXPECT_EQ(D.GetStrategys(G.get())[3]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[4]->getName(), "SouthTitForTat");
+	EXPECT_EQ(D.GetStrategys(G.get())[5]->getName(), "Kind");
+	EXPECT_EQ(D.GetTournamentCount(G.get()), 6 * 5 * 4 / 3 / 2);
 }
 
-TEST(Options, FewArgc) {
+TEST_F(TestGame, FewArgc) {
 	char* argv[] = { "prog", "southback", "kind" };
-	Game* G = nullptr;
-	int res = Launch(3, argv, &G);
+	G.reset(Launch(3, argv, res));
 	EXPECT_EQ(res, -1);
-	delete G;
 }
 
-TEST(Options, FewStrategys1) {
+TEST_F(TestGame, FewStrategys1) {
 	char* argv[] = { "prog", "southback", "kind", "detailed" };
-	Game* G = nullptr;
-	int res = Launch(4, argv, &G);
+	G.reset(Launch(4, argv, res));
 	EXPECT_EQ(res, -1);
 }
 
-TEST(Options, NotRealStrategy) {
-	char* argv[] = { "prog", "southtitfortat", "kind", "blablabla", "traitor" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
+TEST_F(TestGame, NotRealStrategy) {
+	char* argv[] = { "prog", "southtitfortat", "kind", 
+		"blablabla", "traitor" };
+	G.reset(Launch(5, argv, res));
 	EXPECT_EQ(res, -1);
-	delete G;
 }
 
-TEST(Strategys, SouthBack) {
+TEST_F(TestGame, SouthBack) {
 	char* argv[] = { "prog", "southback", "southback", "traitor", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthBack");
-	EXPECT_TRUE(D.GetTraitor1(G) || D.GetTraitor2(G));
-	EXPECT_TRUE(D.GetKind2(G) || D.GetKind1(G));
-	delete G;
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthBack");
+	EXPECT_TRUE(D.GetTraitor1(G.get()) || D.GetTraitor2(G.get()));
+	EXPECT_TRUE(D.GetKind2(G.get()) || D.GetKind1(G.get()));
 }
 
-TEST(Strategys, SouthTitForTat) {
-	char* argv[] = { "prog", "southtitfortat", "southtitfortat", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthTitForTat");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthTitForTat");
-	EXPECT_TRUE(D.GetTraitor1(G) || D.GetTraitor2(G));
-	EXPECT_TRUE(D.GetKind2(G) || D.GetKind1(G));
-	delete G;
+TEST_F(TestGame, SouthTitForTat) {
+	char* argv[] = { "prog", "southtitfortat", "southtitfortat", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthTitForTat");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthTitForTat");
+	EXPECT_TRUE(D.GetTraitor1(G.get()) || D.GetTraitor2(G.get()));
+	EXPECT_TRUE(D.GetKind2(G.get()) || D.GetKind1(G.get()));
 }
 
-TEST(Strategys, SouthDifferent1) {
-	char* argv[] = { "prog", "southback", "southtitfortat", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthBack");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthTitForTat");
-	EXPECT_TRUE(D.GetTraitor1(G) || D.GetTraitor2(G));
-	EXPECT_TRUE(D.GetKind2(G) || D.GetKind1(G));
-	delete G;
+TEST_F(TestGame, SouthDifferent1) {
+	char* argv[] = { "prog", "southback", "southtitfortat", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthBack");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthTitForTat");
+	EXPECT_TRUE(D.GetTraitor1(G.get()) || D.GetTraitor2(G.get()));
+	EXPECT_TRUE(D.GetKind2(G.get()) || D.GetKind1(G.get()));
 }
 
-TEST(Strategys, SouthDifferent2) {
-	char* argv[] = { "prog", "southtitfortat", "southback", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "SouthTitForTat");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "SouthBack");
-	EXPECT_TRUE(D.GetTraitor1(G) || D.GetTraitor2(G));
-	EXPECT_TRUE(D.GetKind2(G) || D.GetKind1(G));
-	delete G;
+TEST_F(TestGame, SouthDifferent2) {
+	char* argv[] = { "prog", "southtitfortat", "southback", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "SouthTitForTat");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "SouthBack");
+	EXPECT_TRUE(D.GetTraitor1(G.get()) || D.GetTraitor2(G.get()));
+	EXPECT_TRUE(D.GetKind2(G.get()) || D.GetKind1(G.get()));
 }
 
-TEST(Strategys, KindTraitorBackAndForth) {
+TEST_F(TestGame, KindTraitorBackAndForth) {
 	char* argv[] = { "prog", "traitor", "kind", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_TRUE(D.GetTraitor1(G));
-	EXPECT_TRUE(D.GetKind2(G));
-	EXPECT_TRUE(D.GetBackAndForth3(G));
-	delete G;
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_TRUE(D.GetTraitor1(G.get()));
+	EXPECT_TRUE(D.GetKind2(G.get()));
+	EXPECT_TRUE(D.GetBackAndForth3(G.get()));
 }
 
-TEST(Strategys, TitForTatKind1) {
+TEST_F(TestGame, TitForTatKind1) {
 	char* argv[] = { "prog", "kind", "titfortatkind", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "TitForTatKind");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_TRUE(D.GetKind2(G));
-	delete G;
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "TitForTatKind");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_TRUE(D.GetKind2(G.get()));
 }
 
-TEST(Strategys, TitForTatKind2) {
-	char* argv[] = { "prog", "titfortatkind", "traitor", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "TitForTatKind");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_TRUE(D.GetTitForTat1(G));
-	delete G;
+TEST_F(TestGame, TitForTatKind2) {
+	char* argv[] = { "prog", "titfortatkind", "traitor", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "TitForTatKind");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_TRUE(D.GetTitForTat1(G.get()));
 }
 
-TEST(Strategys, TitForTatAnger1) {
-	char* argv[] = { "prog", "titfortatanger", "traitor", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "TitForTatAnger");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_TRUE(D.GetTraitor1(G));
-	delete G;
+TEST_F(TestGame, TitForTatAnger1) {
+	char* argv[] = { "prog", "titfortatanger", "traitor", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "TitForTatAnger");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_TRUE(D.GetTraitor1(G.get()));
 }
 
-TEST(Strategys, TitForTatAnger2) {
-	char* argv[] = { "prog", "titfortatanger", "kind", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "TitForTatAnger");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_TRUE(D.GetTitForTat1(G));
-	delete G;
+TEST_F(TestGame, TitForTatAnger2) {
+	char* argv[] = { "prog", "titfortatanger", "kind", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "TitForTatAnger");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_TRUE(D.GetTitForTat1(G.get()));
 }
 
-TEST(Points, points1) {
+TEST_F(TestGame, points1) {
 	char* argv[] = { "prog", "kind", "traitor", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_EQ(D.GetPoint(1, G), 150);
-	EXPECT_EQ(D.GetPoint(2, G), 700);
-	EXPECT_EQ(D.GetPoint(3, G), 400);
-	delete G;
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_EQ(D.GetPoint(G.get())[0], 150);
+	EXPECT_EQ(D.GetPoint(G.get())[1], 700);
+	EXPECT_EQ(D.GetPoint(G.get())[2], 400);
 }
 
-TEST(Points, points2) {
-	char* argv[] = { "prog", "titfortatanger", "kind", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "TitForTatAnger");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "Kind");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_EQ(D.GetPoint(1, G), 602);
-	EXPECT_EQ(D.GetPoint(2, G), 297);
-	EXPECT_EQ(D.GetPoint(3, G), 596);
-	delete G;
+TEST_F(TestGame, points2) {
+	char* argv[] = { "prog", "titfortatanger", "kind", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "TitForTatAnger");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "Kind");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_EQ(D.GetPoint(G.get())[0], 602);
+	EXPECT_EQ(D.GetPoint(G.get())[1], 297);
+	EXPECT_EQ(D.GetPoint(G.get())[2], 596);
 }
 
-TEST(Points, points3) {
-	char* argv[] = { "prog", "traitor", "titfortatkind", "backandforth", "fast" };
-	Game* G = nullptr;
-	int res = Launch(5, argv, &G);
-	EXPECT_EQ(D.GetStrategys(G)[0]->getName(), "Traitor");
-	EXPECT_EQ(D.GetStrategys(G)[1]->getName(), "TitForTatKind");
-	EXPECT_EQ(D.GetStrategys(G)[2]->getName(), "BackAndForth");
-	EXPECT_EQ(D.GetPoint(1, G), 496);
-	EXPECT_EQ(D.GetPoint(2, G), 251);
-	EXPECT_EQ(D.GetPoint(3, G), 246);
-	delete G;
+TEST_F(TestGame, points3) {
+	char* argv[] = { "prog", "traitor", "titfortatkind", 
+		"backandforth", "fast" };
+	G.reset(Launch(5, argv, res));
+	EXPECT_EQ(D.GetStrategys(G.get())[0]->getName(), "Traitor");
+	EXPECT_EQ(D.GetStrategys(G.get())[1]->getName(), "TitForTatKind");
+	EXPECT_EQ(D.GetStrategys(G.get())[2]->getName(), "BackAndForth");
+	EXPECT_EQ(D.GetPoint(G.get())[0], 496);
+	EXPECT_EQ(D.GetPoint(G.get())[1], 251);
+	EXPECT_EQ(D.GetPoint(G.get())[2], 246);
+}
+
+int main(int argc, char** argv) {
+	::testing::InitGoogleTest(&argc, argv);
+	int j, i = RUN_ALL_TESTS();
+	return i;
 }
