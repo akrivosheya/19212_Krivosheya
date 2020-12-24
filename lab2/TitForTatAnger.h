@@ -1,3 +1,4 @@
+#pragma once
 #include "Strategy.h"
 
 class TitForTatAnger : public Strategy {
