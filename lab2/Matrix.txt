@@ -1,8 +1,8 @@
-ccc 7 7 7
-ccd 3 3 9
-cdc 3 9 3
-dcc 9 3 3
-cdd 0 5 5
-dcd 5 0 5
-ddc 5 5 0
-ddd 1 1 1
+CCC 777
+CCD 339
+CDC 393
+DCC 933
+CDD 055
+DCD 505
+DDC 550
+DDD 111
