@@ -66,17 +66,19 @@ void Game::ChangeRect(int idx1, int idx2){
 }
 
 void Game::Activate(){
+    if(play){
+        return;
+    }
     play = true;
     timerId = startTimer(std::chrono::milliseconds(250));
-    haveTimerId = true;
 }
 
 void Game::Diactivate(){
-    play = false;
-    if(haveTimerId){
-        killTimer(timerId);
-        haveTimerId = false;
+    if(!play){
+        return;
     }
+    play = false;
+    killTimer(timerId);
 }
 
 void Game::Clear(){
