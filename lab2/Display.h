@@ -1,6 +1,7 @@
 #pragma once
-#include "Game.h"
 #include <vector>
+
+#include "Game.h"
 #include "Strategy.h"
 
 class Display {
