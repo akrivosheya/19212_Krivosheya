@@ -1,4 +1,3 @@
-#include "pch.h"
 #include "Game.h"
 #include "Preparation.h"
 #include "Display.h"
