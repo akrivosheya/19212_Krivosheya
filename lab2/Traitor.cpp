@@ -21,7 +21,3 @@ bool Traitor::makeDecision() {
 std::string Traitor::getName() {
 	return name;
 }
-
-Strategy* createTraitor() {
-	return new Traitor;
-}
