@@ -21,7 +21,3 @@ bool Kind::makeDecision() {
 std::string Kind::getName() {
 	return name;
 }
-
-Strategy* createKind() {
-	return new Kind;
-}
