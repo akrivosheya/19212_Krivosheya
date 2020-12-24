@@ -1,15 +1,7 @@
-#include "pch.h"
 #include "Display.h"
 
-int Display::GetPoint(int i, Game* G) {
-	switch (i) {
-	case 1:
-		return G->pointS1;
-	case 2:
-		return G->pointS2;
-	case 3:
-		return G->pointS3;
-	}
+std::vector<int>& Display::GetPoint(Game* G) {
+	return G->points;
 }
 
 std::string Display::GetName(Game* G) {
@@ -26,29 +18,29 @@ std::vector<Strategy*>& Display::GetStrategys(Game* G) {
 }
 
 int Display::GetTournamentCount(Game* G) {
-	return G->tournamentCount;
+	return G->tournamentCountForTest;
 }
 
 bool Display::GetTraitor1(Game* G) {
-	return G->traitor1;
+	return G->traitor1ForTest;
 }
 
 bool Display::GetTraitor2(Game* G) {
-	return G->traitor2;
+	return G->traitor2ForTest;
 }
 
 bool Display::GetKind1(Game* G) {
-	return G->kind1;
+	return G->kind1ForTest;
 }
 
 bool Display::GetKind2(Game* G) {
-	return G->kind2;
+	return G->kind2ForTest;
 }
 
 bool Display::GetBackAndForth3(Game* G) {
-	return G->backandforth3;
+	return G->backandforth3ForTest;
 }
 
 bool Display::GetTitForTat1(Game* G) {
-	return G->titfortat1;
+	return G->titfortat1ForTest;
 }
