@@ -11,4 +11,6 @@ private:
 	std::string name = "TitForTatKind";
 };
 
-Strategy* createTitForTatKind();
+Strategy* createTitForTatKind() {
+	return new TitForTatKind;
+}
