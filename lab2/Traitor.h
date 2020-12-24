@@ -10,4 +10,6 @@ private:
 	std::string name = "Traitor";
 };
 
-Strategy* createTraitor();
+Strategy* createTraitor() {
+	return new Traitor;
+}
