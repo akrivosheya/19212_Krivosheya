@@ -9,6 +9,9 @@ int main(int argc, char* argv[]) {
 		return -1;
 	}
 	Printer Print;
-	G->Play("Matrix.txt", Print);
+	std::ifstream file;
+	file.open("Matrix.txt");
+	G->SetRules(file);
+	G->Play(Print);
 	return 0;
 }
