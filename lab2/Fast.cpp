@@ -14,26 +14,22 @@ Fast::Fast(){
 	name = "Fast";
 }
 
-void Fast::Play(const char* file, Printer& print) {
+void Fast::Play(Printer& print) {
 	for (int j = 0; j < steps; ++j) {
 		SetDecisions(strategys[0], strategys[1], strategys[2]);
 		//для тестов
 		if (j > 15) {
-			traitor1 &= !decisionS1;
-			traitor2 &= !decisionS2;
-			titfortat1 &= (j % 2) ? !decisionS1 : decisionS1;
-			kind1 &= decisionS1;
-			kind2 &= decisionS2;
-			backandforth3 &= (j % 2) ? decisionS3 : !decisionS3;
+			traitor1ForTest &= !decisions[0];
+			traitor2ForTest &= !decisions[1];
+			titfortat1ForTest &= (j % 2) ? !decisions[0] : decisions[0];
+			kind1ForTest &= decisions[0];
+			kind2ForTest &= decisions[1];
+			backandforth3ForTest &= (j % 2) ? decisions[2] : !decisions[2];
 		}
 		//------------
-		SetGets(file);
+		SetGets();
 		SetPoints();
 		GiveDecisions(strategys[0], strategys[1], strategys[2]);
 	}
-	print.PrintRes(strategys[0], strategys[1], strategys[2], pointS1, pointS2, pointS3);
-}
-
-Game* createFast() {
-	return new Fast();
+	print.PrintRes(strategys, points, 0, 1, 2);
 }
