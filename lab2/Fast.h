@@ -3,7 +3,9 @@
 class Fast : public Game {
 public:
 	Fast();
-	void Play(const char* file, Printer& print) override;
+	void Play(Printer& print) override;
 };
 
-Game* createFast();
+Game* createFast() {
+	return new Fast();
+}
