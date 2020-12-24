@@ -3,7 +3,9 @@
 class Detailed : public Game {
 public:
 	Detailed();
-	void Play(const char* file, Printer& print) override;
+	void Play(Printer& print) override;
 };
 
-Game* createDetailed();
+Game* createDetailed() {
+	return new Detailed();
+}
