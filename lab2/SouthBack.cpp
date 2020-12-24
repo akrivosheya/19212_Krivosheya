@@ -1,6 +1,5 @@
 #include "SouthBack.h"
 #include "Factory.h"
-#include <iostream>
 
 namespace {
 	bool g() {
@@ -11,70 +10,61 @@ namespace {
 	bool b = g();
 }
 
-SouthBack::SouthBack() : 
-	counter(0), 
-	winner(false), 
-	winnerIs(false),
-	friendIs(true),
-	master1(true), 
-	master2(true),
-	lastDecision(false){}
-
 void SouthBack::putDecisions(bool decision1, bool decision2) {
-	if (winnerIs) {
+	if (thereIsWinner) {
 		return;
 	}
-	if (!friendIs) {
+	if (!thereIsFriend) {
 		BackAndForth::putDecisions(decision1, decision2);
 		return;
 	}
 	if (counter < 10) {
 		bool southDecision = (dancing & (mask << (counter - 1))) >> (counter - 1);
 		if (decision1 != southDecision) {
-			master1 = false;
+			firstIsFriend = false;
 		}
 		if (decision2 != southDecision) {
-			master2 = false;
+			secondIsFriend = false;
 		}
-		if (!master1 && !master2) {
-			friendIs = false;
+		if (!firstIsFriend && !secondIsFriend) {
+			thereIsFriend = false;
 		}
 		return;
 	}
-	if (master1 || master2) {
+	if (firstIsFriend || secondIsFriend) {
 		if (counter == 10) {
 			++counter;
 		}
 		else {
 			if (lastDecision > decision1) {
-				master1 = false;
+				firstIsFriend = false;
 			}
 			if (lastDecision > decision2) {
-				master2 = false;
+				secondIsFriend = false;
 			}
-			if ((master1 && (lastDecision < decision1)) || (master2 && (lastDecision < decision2))) {
-				winnerIs = true;
+			if ((firstIsFriend && (lastDecision < decision1)) || (secondIsFriend && (lastDecision < decision2))) {
+				thereIsWinner = true;
 			}
 		}
 		lastDecision = rand() % 2;
 	}
 	else {
-		winner = winnerIs = true;
+		iAmWinner = thereIsWinner = true;
 	}
 }
 
 bool SouthBack::makeDecision() {
-	if (!friendIs) {
+	if (!thereIsFriend) {
 		return BackAndForth::makeDecision();
 	}
 	if (counter < 10) {
 		++counter;
 		return (dancing & (mask << (counter - 1))) >> (counter - 1);
 	}
-	if (!winnerIs) {
+	if (!thereIsWinner) {
 		return lastDecision;
 	}
-	if (winner) {
+	if (iAmWinner) {
 		return betray;
 	}
 	return help;
@@ -85,14 +75,10 @@ std::string SouthBack::getName() {
 }
 
 void SouthBack::reload() {
-	winnerIs = false;
+	thereIsWinner = false;
 	counter = 0;
-	winner = false;
-	friendIs = true;
-	master1 = true;
-	master2 = true;
-}
-
-Strategy* createSouthBack() {
-	return new SouthBack();
+	iAmWinner = false;
+	thereIsFriend = true;
+	firstIsFriend = true;
+	secondIsFriend = true;
 }
