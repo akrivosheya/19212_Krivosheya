@@ -1,9 +1,10 @@
+#pragma once
 #include "Strategy.h"
 #include "BackAndForth.h"
 
 class SouthBack : public BackAndForth {
 public:
-	SouthBack();
+	SouthBack() = default;
 	void putDecisions(bool decision1, bool decision2) override;
 	bool makeDecision() override;
 	std::string getName() override;
@@ -12,13 +13,15 @@ private:
 	static constexpr int dancing = 618;
 	static constexpr int mask = 1;
 	std::string name = "SouthBack";
-	int counter;
-	bool winner;
-	bool winnerIs;
-	bool friendIs;
-	bool master1;
-	bool master2;
-	bool lastDecision;
+	int counter = 0;
+	bool iAmWinner = false;
+	bool thereIsWinner = false;
+	bool thereIsFriend = true;
+	bool firstIsFriend = true;
+	bool secondIsFriend = true;
+	bool lastDecision = false;
 };
 
-Strategy* createSouthBack();
+Strategy* createSouthBack() {
+	return new SouthBack();
+}
