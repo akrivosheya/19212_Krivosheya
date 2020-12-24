@@ -1,6 +1,5 @@
 #include <QFileDialog>
 #include <QMessageBox>
-#include <iostream>
 
 #include "DataMaster.h"
 
@@ -21,11 +20,21 @@ void DataMaster::Save(std::vector<std::vector<bool> >& matrix, std::vector<int>&
         out.setVersion(QDataStream::Qt_4_5);
         out << (qint32)rules[0] << (qint32)rules[1] << (qint32)rules[2]
                 << (qint32)matrix[0].size() << (qint32)matrix.size();
+        bool bitForWriting = matrix[0][0];
+        int counter = 0;
         for(auto iter1 = matrix.begin(); iter1 != matrix.end(); ++iter1){
             for(auto iter2 = iter1->begin(); iter2 != iter1->end(); ++iter2){
-                out << (qint32)*iter2;
+                if(bitForWriting != *iter2){
+                    out << (qint32)counter << (qint32)bitForWriting;
+                    bitForWriting = *iter2;
+                    counter = 1;
+                }
+                else{
+                    ++counter;
+                }
             }
         }
+        out << (qint32)counter << (qint32)bitForWriting;
      }
 }
 
@@ -46,41 +55,68 @@ void DataMaster::Load(std::vector<std::vector<bool> >& matrix, std::vector<int>&
 
             QDataStream in(&file);
             in.setVersion(QDataStream::Qt_4_5);
+
             std::vector<int> newRules(3);
-            in >> newRules[0] >> newRules[1] >> newRules[2];
-            if(!(newRules[0] >= 0 && newRules[0] <= 8 &&
-                 newRules[1] >= 0 && newRules[2] <= 8 && newRules[1] <= newRules[2])){
+            if(!GetVector(in, newRules, maxRule)){
                 QMessageBox::information(nullptr, tr("Error"),
                                         "Wrong format");
                 return;
             }
-            int newWidth, newHeight;
-            in >> newWidth >> newHeight;
-            if(!(newWidth > 0 && newWidth <= 100 &&
-                 newHeight > 0 && newHeight <= 100)){
+
+            std::vector<int> size(2);
+            if(!GetVector(in, size, maxSize) ||
+                    size[0] == 0 || size[1] == 0){
                 QMessageBox::information(nullptr, tr("Error"),
                                         "Wrong format");
                 return;
             }
-            int tmp;
-            std::vector<std::vector<bool> > newMatrix(newHeight, std::vector<bool>(newWidth));
-            for(auto iter1 = newMatrix.begin(); iter1 != newMatrix.end(); ++iter1){
-                for(auto iter2 = iter1->begin(); iter2 != iter1->end(); ++iter2){
-                    if(in.atEnd()){
-                        QMessageBox::information(nullptr, tr("Error"),
-                                                "Wrong format");
-                        return;
-                    }
-                    in >> tmp;
-                    if(!(tmp == 0 || tmp == 1)){
-                        QMessageBox::information(nullptr, tr("Error"),
-                                                "Wrong format");
-                        return;
-                    }
-                    *iter2 = tmp;
-                }
+            std::vector<std::vector<bool> > newMatrix(size[1], std::vector<bool>(size[0]));
+            if(!GetMatrix(in, newMatrix)){
+                QMessageBox::information(nullptr, tr("Error"),
+                                        "Wrong format");
+                return;
             }
+
             rules = std::move(newRules);
             matrix = std::move(newMatrix);
     }
+}
+
+bool DataMaster::GetVector(QDataStream& in, std::vector<int>& someVector, int limit){
+    for(auto iter = someVector.begin(); iter != someVector.end(); ++iter){
+        in >> *iter;
+        if(in.atEnd() || *iter < 0 || *iter > limit){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool DataMaster::GetMatrix(QDataStream& in, std::vector<std::vector<bool> >& matrix){
+    int counter = 0;
+    int bitForLoading;
+    for(auto iter1 = matrix.begin(); iter1 != matrix.end(); ++iter1){
+        for(auto iter2 = iter1->begin(); iter2 != iter1->end(); ++iter2){
+            if(!counter){
+                if(in.atEnd()){
+                    return true;
+                }
+                else{
+                    in >> counter;
+                }
+                if(in.atEnd()){
+                    return false;
+                }
+                else{
+                    in >> bitForLoading;
+                }
+            }
+            *iter2 = bitForLoading;
+            --counter;
+        }
+    }
+    if(!in.atEnd()){
+        return false;
+    }
+    return true;
 }
