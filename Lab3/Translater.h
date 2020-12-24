@@ -9,7 +9,8 @@ class Translater: public QObject{
 
 public:
     void TranslateRules(const QString& rulesQS);
-    void TranslateSize(const QString& widthQS, const QString& heightQS);
+    void TranslateSize(const QString& widthQS,
+                       const QString& heightQS);
 
 signals:
     void TranslatedRules(std::vector<int>& newRules);
