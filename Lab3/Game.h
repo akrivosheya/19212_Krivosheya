@@ -8,7 +8,9 @@ class Game: public QObject{
     Q_OBJECT
 public:
     Game(int width = defaultSize, int height = defaultSize,
-         int rule1 = ruleOfLife, int rule2 = ruleOfDeathMin, int rule3 = ruleOfDeathMax);
+         int rule1 = defaultRuleOfLife,
+         int rule2 = defaultRuleOfDeathMin,
+         int rule3 = defaultRuleOfDeathMax);
     std::vector<std::vector<bool> >& GetMatrix();
     bool GetPlay();
     std::vector<int>& GetRules();
@@ -28,11 +30,13 @@ private:
     void timerEvent(QTimerEvent *event) override;
     bool IsNumber(const std::string& str);
     static constexpr int defaultSize = 25;
-    enum defaultRules{ ruleOfLife = 3, ruleOfDeathMin = 2, ruleOfDeathMax = 3};
+    enum defaultRules{ defaultRuleOfLife = 3,
+                       defaultRuleOfDeathMin = 2,
+                       defaultRuleOfDeathMax = 3};
     std::vector<std::vector<bool> > matrix;
     std::vector<int> rules;
     int timerId = 0;
-    bool play = false, haveTimerId = false;
+    bool play = false;
 };
 
 #endif // GAME_H
