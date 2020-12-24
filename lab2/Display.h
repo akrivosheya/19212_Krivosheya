@@ -5,7 +5,7 @@
 
 class Display {
 public:
-	int GetPoint(int i, Game* G);
+	std::vector<int>& GetPoint(Game* G);
 	int GetSteps(Game* G);
 	bool GetTraitor1(Game* G);
 	bool GetTraitor2(Game* G);
