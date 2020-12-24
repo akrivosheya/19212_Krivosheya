@@ -26,7 +26,3 @@ std::string TitForTatKind::getName() {
 void TitForTatKind::reload() {
 	betrayed = false;
 }
-
-Strategy* createTitForTatKind() {
-	return new TitForTatKind;
-}
