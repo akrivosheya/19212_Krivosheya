@@ -1,8 +1,8 @@
 #include "Preparation.h"
 
 bool Preparation::IsDigit(std::string str) {
-	for (unsigned int i = 0; i < str.size(); ++i) {
-		if (!isdigit(str[i])) {
+	for (auto iter = str.begin(); iter != str.end(); ++iter) {
+		if (!isdigit(*iter)) {
 			return false;
 		}
 	}
@@ -13,7 +13,7 @@ bool Preparation::IsMode(char* str) {
 	return !(strcmp(str, "detailed") && strcmp(str, "fast") && strcmp(str, "tournament"));
 }
 
-void Preparation::SetModeOptional(const int& size, std::string& mode) {
+void Preparation::SetModeOptional(int size, std::string& mode) {
 	if (size == 3) {
 		mode = "detailed";
 	}
@@ -22,7 +22,7 @@ void Preparation::SetModeOptional(const int& size, std::string& mode) {
 	}
 }
 
-bool Preparation::SetOptions(const int& size, std::string& mode, int& steps, int& i, const int& argc, char* argv[]) {
+bool Preparation::SetOptions(int size, std::string& mode, int& steps, int i, int argc, char* argv[]) {
 	if (size < 3) {
 		return false;
 	}
@@ -34,21 +34,15 @@ bool Preparation::SetOptions(const int& size, std::string& mode, int& steps, int
 		if (IsMode(argv[i])) {
 			mode = argv[i];
 			++i;
-			if (i > argc - 1) {
-				steps = optionalSteps;
-			}
-			else {
-				steps = atoi(argv[i]);
-			}
 		}
 		else {
 			SetModeOptional(size, mode);
-			if (i > argc - 1) {
-				steps = optionalSteps;
-			}
-			else {
-				steps = atoi(argv[i]);
-			}
+		}
+		if (i > argc - 1) {
+			steps = optionalSteps;
+		}
+		else {
+			steps = atoi(argv[i]);
 		}
 	}
 	return true;
@@ -73,8 +67,7 @@ Game* Preparation::Prepare(int& argc, char* argv[]) {
 	Game* G = Factory<Game, std::string, Game* (*)()>::getInstance()->makeStrategy(mode);
 	if (G) {
 		G->SetSteps(steps);
-		G->SetStrategys(strategys);
+		G->SetStrategys(std::move(strategys));
 	}
-	strategys.clear();
 	return G;
 }
