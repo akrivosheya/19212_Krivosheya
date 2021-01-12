@@ -6,7 +6,7 @@ void Translater::TranslateRules(const QString& rulesQS){
     std::string rules = rulesQS.toLocal8Bit().constData();
     if(rules.size() != rulesSize){
         QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong format of rules");
+                                "Wrong rules");
         return;
     }
     std::vector<int> newRules(3);
@@ -15,7 +15,7 @@ void Translater::TranslateRules(const QString& rulesQS){
     }
     else{
         QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong format of rules");
+                                "Wrong rules");
         return;
     }
     if(rules[2] == '/' && rules[3] == 'S'
@@ -26,7 +26,7 @@ void Translater::TranslateRules(const QString& rulesQS){
     }
     else{
         QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong format of rules");
+                                "Wrong rules");
         return;
     }
 
@@ -40,14 +40,14 @@ void Translater::TranslateSize(const QString& widthQS, const QString& heightQS){
             widthStr.size() == 0 || heightStr.size() == 0 ||
             !IsNumber(widthStr) || !IsNumber(heightStr)){
         QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong format of size");
+                                "Wrong size");
         return;
     }
     int newWidth = stoi(widthStr);
     int newHeight = stoi(heightStr);
     if(newWidth == 0 || newHeight == 0 || newWidth > 100 || newHeight > 100){
         QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong format of size");
+                                "Wrong size");
         return;
     }
     std::vector<std::vector<bool> > newMatrix(newHeight, std::vector<bool>(newWidth));
