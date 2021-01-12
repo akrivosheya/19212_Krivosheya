@@ -29,10 +29,6 @@ protected:
 	std::unique_ptr<Game> G;
 };
 
-TEST(op, pf) {
-	EXPECT_TRUE(true);
-}
-
 TEST_F(TestGame, Southfast) {
 	char* argv[] = { "prog", "southback", "traitor", "backandforth", 
 		"fast", "50" };
