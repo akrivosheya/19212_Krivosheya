@@ -1,5 +1,8 @@
+#include "pch.h"
 #include "Fast.h"
 #include "Factory.h"
+
+Game* createFast();
 
 namespace {
 	bool g() {
@@ -10,13 +13,9 @@ namespace {
 	bool b = g();
 }
 
-Fast::Fast(){
-	name = "Fast";
-}
-
 void Fast::Play(Printer& print) {
 	for (int j = 0; j < steps; ++j) {
-		SetDecisions(strategys[0], strategys[1], strategys[2]);
+		SetDecisions(strategys[0].get(), strategys[1].get(), strategys[2].get());
 		//для тестов
 		if (j > 15) {
 			traitor1ForTest &= !decisions[0];
@@ -29,7 +28,11 @@ void Fast::Play(Printer& print) {
 		//------------
 		SetGets();
 		SetPoints();
-		GiveDecisions(strategys[0], strategys[1], strategys[2]);
+		GiveDecisions(strategys[0].get(), strategys[1].get(), strategys[2].get());
 	}
 	print.PrintRes(strategys, points, 0, 1, 2);
+}
+
+Game* createFast() {
+	return new Fast();
 }
