@@ -1,13 +1,13 @@
 #include "Printer.h"
 
-void Printer::PrintRes(std::vector<Strategy*>& strategys,
+void Printer::PrintRes(std::vector<std::unique_ptr<Strategy> >& strategys,
 	std::vector<int> points, int i, int j, int k) {
 	std::cout << strategys[i]->getName() << " - " << points[0] << "; "
 		<< strategys[j]->getName() << " - " << points[1] <<
 		"; " << strategys[k]->getName() << " - " << points[2] << std::endl;
 }
 
-void Printer::PrintTournamentRes(std::vector<Strategy*>& strategys, 
+void Printer::PrintTournamentRes(std::vector<std::unique_ptr<Strategy> >& strategys,
 	std::vector<int>& victories) {
 	std::cout << std::endl << "Results:" << std::endl;
 	for (int i = 0; i < strategys.size(); ++i) {
