@@ -2,6 +2,8 @@
 #include "Preparation.h"
 #include "Display.h"
 
+#include <fstream>
+
 Game* Launch(int argc, char* argv[], int& res) {
 	if (argc < 4) { 
 		res = -1;
@@ -14,8 +16,7 @@ Game* Launch(int argc, char* argv[], int& res) {
 		return nullptr;
 	}
 	Printer Print;
-	std::ifstream file;
-	file.open("Matrix.txt");
+	std::ifstream file("Matrix.txt");
 	G->SetRules(file);
 	G->Play(Print);
 	res = 0;
@@ -28,6 +29,10 @@ protected:
 	int res;
 	std::unique_ptr<Game> G;
 };
+
+TEST(op, pf) {
+	EXPECT_TRUE(true);
+}
 
 TEST_F(TestGame, Southfast) {
 	char* argv[] = { "prog", "southback", "traitor", "backandforth", 
