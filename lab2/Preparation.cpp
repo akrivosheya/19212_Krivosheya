@@ -1,16 +1,8 @@
 #include "Preparation.h"
 
 bool Preparation::IsDigit(std::string str) {
-	for (auto iter = str.begin(); iter != str.end(); ++iter) {
-		if (!isdigit(*iter)) {
-			return false;
-		}
-	}
-	return true;
-}
-
-bool Preparation::IsMode(char* str) {
-	return !(strcmp(str, "detailed") && strcmp(str, "fast") && strcmp(str, "tournament"));
+	return str.end() == std::find_if(str.begin(),
+		str.end(), [](char c) -> auto {return !isdigit(c);  });
 }
 
 void Preparation::SetModeOptional(int size, std::string& mode) {
@@ -52,9 +44,9 @@ Game* Preparation::Prepare(int& argc, char* argv[]) {
 	int i = 1;
 	int steps = 0;
 	std::string mode = "IsNotSet";
-	std::vector<Strategy*> strategys;
+	std::vector<std::unique_ptr<Strategy> > strategys;
 	for (; (i <= argc - 1) && !IsMode(argv[i]) && !IsDigit(argv[i]); ++i) {
-		strategys.push_back(Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[i]));
+		strategys.emplace_back(Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->makeStrategy(argv[i]));
 		if (!strategys[i - 1]) {
 			return nullptr;
 		}
