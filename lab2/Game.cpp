@@ -1,5 +1,4 @@
-#include <fstream>
-
+#include "pch.h"
 #include "Game.h"
 
 Game::Game():decisions(3),
@@ -7,7 +6,7 @@ Game::Game():decisions(3),
 			points(3),
 			rules(8){}
 
-void Game::SetRules(std::ifstream& is) {
+void Game::SetRules(std::istream& is) {
 	std::vector<char> symbs(3);
 	int index = 0;
 	for (int j = 0; j < rules.size(); ++j) {
@@ -18,10 +17,6 @@ void Game::SetRules(std::ifstream& is) {
 		is >> rules[index];
 		index = 0;
 	}
-}
-
-Game::~Game() {
-	strategys.clear();
 }
 
 void Game::SetDecisions(Strategy* S1, Strategy* S2, Strategy* S3) {
@@ -59,23 +54,15 @@ void Game::SetWinners(int& S1, int& S2, int& S3) {
 	if (max <= points[1]) {
 		secondIsWinner = true;
 		max = points[1];
-		firstIsWinner = (points[0] == max) ? true : false;
+		firstIsWinner = points[0] == max;
 	}
 	if (max <= points[2]) {
 		ThirdIsWinner = true;
 		max = points[2];
-		firstIsWinner = (points[0] == max) ? true : false;
-		secondIsWinner = (points[1] == max) ? true : false;
+		firstIsWinner = points[0] == max;
+		secondIsWinner = points[1] == max;
 	}
 	S1 += (firstIsWinner) ? 1 : 0;
 	S2 += (secondIsWinner) ? 1 : 0;
 	S3 += (ThirdIsWinner) ? 1 : 0;
-}
-
-void Game::SetSteps(int steps) {
-	this->steps = steps;
-}
-
-void Game::SetStrategys(std::vector<Strategy*>&& strategys) {
-	this->strategys = strategys;
 }
