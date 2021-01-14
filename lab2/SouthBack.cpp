@@ -1,6 +1,8 @@
 #include "SouthBack.h"
 #include "Factory.h"
 
+Strategy* createSouthBack();
+
 namespace {
 	bool g() {
 		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("southback", createSouthBack);
@@ -70,10 +72,6 @@ bool SouthBack::makeDecision() {
 	return help;
 }
 
-std::string SouthBack::getName() {
-	return name;
-}
-
 void SouthBack::reload() {
 	thereIsWinner = false;
 	counter = 0;
@@ -81,4 +79,8 @@ void SouthBack::reload() {
 	thereIsFriend = true;
 	firstIsFriend = true;
 	secondIsFriend = true;
+}
+
+Strategy* createSouthBack() {
+	return new SouthBack();
 }
