@@ -7,7 +7,9 @@ public:
 	SouthTitForTat() = default;
 	void putDecisions(bool decision1, bool decision2) override;
 	bool makeDecision() override;
-	std::string getName() override;
+	std::string getName() override {
+		return name;
+	}
 	void reload() override;
 private:
 	static constexpr int dancing = 618;
@@ -21,7 +23,3 @@ private:
 	bool secondIsFriend = true;
 	bool lastDecision = false;
 };
-
-Strategy* createSouthTitForTat() {
-	return new SouthTitForTat();
-}
