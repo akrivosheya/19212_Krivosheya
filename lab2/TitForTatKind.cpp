@@ -1,6 +1,8 @@
 #include "TitForTatKind.h"
 #include "Factory.h"
 
+Strategy* createTitForTatKind();
+
 namespace {
 	bool g() {
 		Factory<Strategy, std::string, Strategy* (*)()>::getInstance()->addCreator("titfortatkind", createTitForTatKind);
@@ -15,14 +17,6 @@ void TitForTatKind::putDecisions(bool decision1, bool decision2) {
 	return;
 }
 
-bool TitForTatKind::makeDecision() {
-	return betrayed;
-}
-
-std::string TitForTatKind::getName() {
-	return name;
-}
-
-void TitForTatKind::reload() {
-	betrayed = false;
+Strategy* createTitForTatKind() {
+	return new TitForTatKind;
 }
