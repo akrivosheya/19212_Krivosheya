@@ -1,6 +1,6 @@
 #pragma once
 #include <vector>
-#include <fstream>
+#include <iostream>
 #include <string>
 
 #include "Strategy.h"
@@ -9,11 +9,18 @@
 class Game {
 public:
 	Game();
-	virtual ~Game();
+	virtual ~Game() {
+		strategys.clear();
+	}
 	virtual void Play(Printer& print){}
-	void SetSteps(int steps);
-	void SetStrategys(std::vector<Strategy*>&& strategys);
-	void SetRules(std::ifstream& is);
+	void SetSteps(int steps) {
+		this->steps = steps;
+	}
+	void SetStrategys(std::vector<std::unique_ptr<Strategy> >&& strategys) {
+		this->strategys = std::move(strategys);
+	}
+	void SetRules(std::istream& is);
+	friend class Display;
 protected:
 	void SetDecisions(Strategy* S1, Strategy* S2, Strategy* S3);
 	void SetGets();
@@ -21,7 +28,7 @@ protected:
 	void GiveDecisions(Strategy* S1, Strategy* S2, Strategy* S3);
 	void SetWinners(int& S1, int& S2, int& S3);
 	int steps = 0;
-	std::vector<Strategy*> strategys;
+	std::vector<std::unique_ptr<Strategy> > strategys;
 	std::vector<bool> decisions;
 	std::vector<int> gets;
 	std::vector<int> points;
