@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include "Game.h"
 #include "Preparation.h"
 
