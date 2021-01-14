@@ -1,6 +1,7 @@
-#pragma once
 #include "SouthTitForTat.h"
 #include "Factory.h"
+
+Strategy* createSouthTitForTat();
 
 namespace {
 	bool g() {
@@ -71,10 +72,6 @@ bool SouthTitForTat::makeDecision() {
 	return help;
 }
 
-std::string SouthTitForTat::getName() {
-	return name;
-}
-
 void SouthTitForTat::reload() {
 	thereIsWinner = false;
 	counter = 0;
@@ -83,4 +80,8 @@ void SouthTitForTat::reload() {
 	firstIsFriend = true;
 	secondIsFriend = true;
 	lastDecision = false;
+}
+
+Strategy* createSouthTitForTat() {
+	return new SouthTitForTat();
 }
