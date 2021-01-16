@@ -10,6 +10,8 @@
 #include "Game.h"
 #include "Translater.h"
 #include "DataMaster.h"
+#include "Informant.h"
+#include "Timer.h"
 
 class Window : public QWidget
 {
@@ -24,6 +26,11 @@ public slots:
     void ResizeGame();
     void SaveGame();
     void LoadGame();
+    void ActivateGame();
+    void DiactivateGame();
+    void PlayGame();
+    void ClearGame();
+    void ChangeRectOfMatrix(int idx1, int idx2);
 
 private:
     std::unique_ptr<Game> game;
@@ -42,5 +49,7 @@ private:
     std::unique_ptr<QLineEdit> heightLine;
     std::unique_ptr<QLabel> widthLabel;
     std::unique_ptr<QLabel> heightLabel;
+    std::unique_ptr<Informant> informant;
+    std::unique_ptr<Timer> timer;
 };
 #endif
