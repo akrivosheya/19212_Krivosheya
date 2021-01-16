@@ -2,23 +2,28 @@
 #define TRANSLATER_H
 
 #include <QObject>
+#include <vector>
 
-class Translater: public QObject{
-    Q_OBJECT;
-
-
+class Translater{
 public:
-    void TranslateRules(const QString& rulesQS);
-    void TranslateSize(const QString& widthQS,
-                       const QString& heightQS);
-
-signals:
-    void TranslatedRules(std::vector<int>& newRules);
-    void TranslatedSize(std::vector<std::vector<bool> >& newMatrix);
+    bool TranslateRules(const QString& rulesQS,
+                        std::vector<std::vector<bool> >& newRules);
+    bool TranslateSize(const QString& widthQS,
+                       const QString& heightQS,
+                       std::vector<std::vector<bool> >& matrix);
 
 private:
-    bool IsNumber(const std::string& str);
-    static constexpr int rulesSize = 6;
+    bool IsNumber(const QString& str);
+    bool GetFirstRule(const QString& rulesStr,
+                      const QChar* endOfFirstRule,
+                      std::vector<std::vector<bool> >& newRules);
+    bool GetSecondRule(const QString& rulesStr,
+                       const QChar* endOfFirstRule,
+                       std::vector<std::vector<bool> >& newRules);
+    static constexpr int minRulesSize = 3;
+    static constexpr int maxRulesSize = 19;
+    static constexpr int maxNeighbours = 8;
+    static constexpr int countOfRules = 2;
 };
 
 #endif // TRANSLATER_H
