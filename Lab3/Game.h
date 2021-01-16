@@ -1,42 +1,46 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <QObject>
 #include <vector>
 
-class Game: public QObject{
-    Q_OBJECT
+class Game{
 public:
-    Game(int width = defaultSize, int height = defaultSize,
-         int rule1 = defaultRuleOfLife,
-         int rule2 = defaultRuleOfDeathMin,
-         int rule3 = defaultRuleOfDeathMax);
-    std::vector<std::vector<bool> >& GetMatrix();
-    bool GetPlay();
-    std::vector<int>& GetRules();
-
-public slots:
-    void SetRules(std::vector<int>& newRules);
-    void Resize(std::vector<std::vector<bool> >& newMatrix);
+    Game(int width = defaultSize, int height = defaultSize);
+    std::vector<std::vector<bool> >& GetMatrix(){
+        return matrix;
+    }
+    bool GetIsPlaying(){
+        return isPlaying;
+    }
+    std::vector<std::vector<bool> >& GetRules(){
+        return rules;
+    }
+    void SetRules(std::vector<std::vector<bool> >& newRules){
+        rules = std::move(newRules);
+    }
+    void Resize(std::vector<std::vector<bool> >& newMatrix){
+        matrix = std::move(newMatrix);
+    }
     void ChangeRect(int idx1, int idx2);
-    void Activate();
-    void Diactivate();
+    void Activate(){
+        isPlaying = true;
+    }
+    void Diactivate(){
+        isPlaying = false;
+    }
     void Clear();
-
-signals:
-    void Changed();
+    void MakeStep();
 
 private:
-    void timerEvent(QTimerEvent *event) override;
-    bool IsNumber(const std::string& str);
     static constexpr int defaultSize = 25;
-    enum defaultRules{ defaultRuleOfLife = 3,
+    enum defaultRules{ maxNeighbours = 8,
+                       countOfRules = 2,
+                       defaultRuleOfLife = 3,
                        defaultRuleOfDeathMin = 2,
                        defaultRuleOfDeathMax = 3};
     std::vector<std::vector<bool> > matrix;
-    std::vector<int> rules;
-    int timerId = 0;
-    bool play = false;
+    std::vector<std::vector<bool> > rules;
+    bool isPlaying = false;
 };
 
 #endif // GAME_H
