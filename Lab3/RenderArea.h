@@ -7,22 +7,30 @@
 #include <QMouseEvent>
 #include <vector>
 
+#include "Game.h"
+
 class RenderArea: public QWidget{
     Q_OBJECT
 public:
-    RenderArea(std::vector<std::vector<bool> >& matrix_);
-    QSize minimumSizeHint() const override;
+    RenderArea(Game* game_):
+        game(game_){
+    }
+    QSize minimumSizeHint() const override{
+        return QSize(500, 500);
+    }
     void mousePressEvent(QMouseEvent* event) override;
 
 public slots:
-    void Update();
+    void Update(){
+        update();
+    }
 
 signals:
     void Clicked(int idx1, int idx2);
 
 private:
     void paintEvent(QPaintEvent *event) override;
-    std::vector<std::vector<bool> >& matrix;
+    Game* game;
     int rectWidth;
     int rectHeight;
 };
