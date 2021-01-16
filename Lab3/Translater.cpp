@@ -1,64 +1,102 @@
-#include <QMessageBox>
+#include <algorithm>
 
 #include "Translater.h"
 
-void Translater::TranslateRules(const QString& rulesQS){
-    std::string rules = rulesQS.toLocal8Bit().constData();
-    if(rules.size() != rulesSize){
-        QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong rules");
-        return;
+bool Translater::TranslateRules(const QString& rulesStr,
+                                std::vector<std::vector<bool> >& rules){
+    if(!(rulesStr.size() >= minRulesSize && rulesStr.size() <= maxRulesSize)){
+        return false;
     }
-    std::vector<int> newRules(3);
-    if(rules[0] == 'B' && rules[1] <= '8' && rules[1] >= '0'){
-        newRules[0] = rules[1] - '0';
+    const QChar* endOfFirstRule = std::find(rulesStr.begin(), rulesStr.end(), '/');
+    std::vector<std::vector<bool> > newRules(countOfRules, std::vector<bool>(maxNeighbours + 1));
+    if(!GetFirstRule(rulesStr, endOfFirstRule, newRules)){
+        return false;
     }
-    else{
-        QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong rules");
-        return;
+    if(!GetSecondRule(rulesStr, endOfFirstRule, newRules)){
+        return false;
     }
-    if(rules[2] == '/' && rules[3] == 'S'
-            && rules[4] >= '0' && rules[5] <= '8'
-            && rules[4] <= rules[5]){
-        newRules[1] = rules[4] - '0';
-        newRules[2] = rules[5] - '0';
-    }
-    else{
-        QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong rules");
-        return;
-    }
-
-    emit TranslatedRules(newRules);
+    rules = std::move(newRules);
+    return true;
 }
 
-void Translater::TranslateSize(const QString& widthQS, const QString& heightQS){
-    std::string widthStr = widthQS.toLocal8Bit().constData();
-    std::string heightStr = heightQS.toLocal8Bit().constData();
+bool Translater::TranslateSize(const QString& widthStr,
+                               const QString& heightStr,
+                               std::vector<std::vector<bool> >& matrix){
     if(widthStr.size() > 3 || heightStr.size() > 3 ||
             widthStr.size() == 0 || heightStr.size() == 0 ||
             !IsNumber(widthStr) || !IsNumber(heightStr)){
-        QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong size");
-        return;
+        return false;
     }
-    int newWidth = stoi(widthStr);
-    int newHeight = stoi(heightStr);
+    int newWidth = widthStr.toInt();
+    int newHeight = heightStr.toInt();
     if(newWidth == 0 || newHeight == 0 || newWidth > 100 || newHeight > 100){
-        QMessageBox::information(nullptr, tr("Error"),
-                                "Wrong size");
-        return;
+        return false;
     }
     std::vector<std::vector<bool> > newMatrix(newHeight, std::vector<bool>(newWidth));
-    emit TranslatedSize(newMatrix);
+    matrix = std::move(newMatrix);
+    return true;
 }
 
-bool Translater::IsNumber(const std::string& str){
-    for(auto iter = str.begin(); iter !=str.end(); ++iter){
-        if(!isdigit(*iter)){
+bool Translater::IsNumber(const QString& str){
+    return str.end() == std::find_if(str.begin(),
+                                     str.end(),
+                                     [](QChar c)-> bool {return !c.isDigit();});
+}
+
+bool Translater::GetFirstRule(const QString& rulesStr,
+                              const QChar* endOfFirstRule,
+                              std::vector<std::vector<bool> >& newRules){
+    if(rulesStr[0] == 'B' && rulesStr[1].isDigit()){
+        if((endOfFirstRule - rulesStr.begin() - 1) > maxNeighbours ||
+                rulesStr.end() == endOfFirstRule){
             return false;
         }
+        int lastDigit = -1;
+        for(auto iter = rulesStr.begin() + 1;
+            iter != endOfFirstRule; ++iter){
+            if(iter->isDigit() &&
+                    lastDigit < iter->digitValue() &&
+                    iter->digitValue() <= maxNeighbours){
+                newRules[0][iter->digitValue()] = true;
+                lastDigit = iter->digitValue();
+            }
+            else{
+                return false;
+            }
+        }
+    }
+    else{
+        return false;
+    }
+    return true;
+}
+
+bool Translater::GetSecondRule(const QString& rulesStr,
+                               const QChar* endOfFirstRule,
+                               std::vector<std::vector<bool> >& newRules){
+    if(endOfFirstRule + 1 != rulesStr.end() &&
+            endOfFirstRule + 2 != rulesStr.end()&&
+            *(endOfFirstRule + 1) == 'S' &&
+            (endOfFirstRule + 2)->isDigit()){
+        if((rulesStr.end() - endOfFirstRule - 2) > maxNeighbours){
+            return false;
+        }
+        int lastDigit = -1;
+        for(auto iter = endOfFirstRule + 2;
+            iter != rulesStr.end(); ++iter){
+            if(iter->isDigit() &&
+                    lastDigit < iter->digitValue() &&
+                    iter->digitValue() <= maxNeighbours){
+                newRules[1][iter->digitValue()] = true;
+                lastDigit = iter->digitValue();
+            }
+            else{
+                return false;
+            }
+        }
+    }
+    else{
+        return false;
     }
     return true;
 }
