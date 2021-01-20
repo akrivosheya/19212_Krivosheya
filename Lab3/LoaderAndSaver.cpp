@@ -1,13 +1,13 @@
+#include <algorithm>
+
 #include "LoaderAndSaver.h"
 
 void LoaderAndSaver::SaveData(QDataStream& out,
                               std::vector<std::vector<bool> >& matrix,
                               std::vector<std::vector<bool> >& rules){
-    for(auto iter = rules[0].begin(); iter != rules[0].end(); ++iter){
-        out << (qint32)(*iter);
-    }
-    for(auto iter = rules[1].begin(); iter != rules[1].end(); ++iter){
-        out << (qint32)(*iter);
+    for(auto iter = rules.begin(); iter != rules.end(); ++iter){
+        std::for_each(iter->begin(), iter->end(), [&out](bool x){
+            out << (qint32)x;});
     }
     out << (qint32)matrix[0].size() << (qint32)matrix.size();
     bool bitForWriting = matrix[0][0];
