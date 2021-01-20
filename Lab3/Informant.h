@@ -23,10 +23,6 @@ public:
         QMessageBox::information(nullptr, "Error",
                                 err);
     }
-    void InformEmpty(){
-        QMessageBox::information(nullptr, "Error",
-                                "Empty filename");
-    }
     void InformSuccessfulSaving(){
         QMessageBox::information(nullptr, "OK",
                                 "Successful saving");
