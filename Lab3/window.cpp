@@ -126,10 +126,6 @@ void Window::LoadGame(){
         informant->InformSuccessfulLoading();
         return;
     }
-    if(res == dataMaster->GetEmptyCode()){
-        informant->InformEmpty();
-        return;
-    }
     if(res == dataMaster->GetUnableCode()){
         informant->InformUnable(error);
         return;
