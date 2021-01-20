@@ -11,9 +11,6 @@ public:
     int Load(std::vector<std::vector<bool> >& matrix,
              std::vector<std::vector<bool> >& rules,
              QString& error);
-    int GetEmptyCode(){
-        return emptyName;
-    }
     int GetUnableCode(){
         return unableToOpen;
     }
