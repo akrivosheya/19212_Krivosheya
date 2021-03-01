@@ -1,8 +1,8 @@
-import java.util.Vector;
+//import something
 
 public class Addition implements Command{
 	@Override
-	public boolean execute(Vector<Integer> stack){
+	public boolean execute(/*good type*/ stack){
 		int firstOperand, secondOperand;
 		if(stack.size() < 2){
 			System.out.println("Addition need 2 operands");
