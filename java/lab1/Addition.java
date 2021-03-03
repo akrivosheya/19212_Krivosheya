@@ -1,18 +1,16 @@
-//import something
+import java.lang.RuntimeException;
 
 public class Addition implements Command{
 	@Override
-	public boolean execute(/*good type*/ stack){
+	public void execute(Context context){
 		int firstOperand, secondOperand;
 		if(stack.size() < 2){
-			System.out.println("Addition need 2 operands");
-			return !success;
+			throw new RuntimeException("Addition need 2 operands");
 		}
-		firstOperand = stack.lastElement();
-		stack.remove(stack.size() - 1);
-		secondOperand = stack.lastElement();
-		stack.remove(stack.size() - 1);
-		stack.add(firstOperand + secondOperand);
-		return success;
+		firstOperand = context.get();
+		context.pop();
+		secondOperand = context.get();
+		context.pop();
+		context.push(firstOperand + secondOperand);
 	}
 }
