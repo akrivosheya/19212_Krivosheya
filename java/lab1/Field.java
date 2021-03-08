@@ -30,12 +30,29 @@ public class Field{
 	}
 
 	public char getKey(){
-		char symb = field.get(positionX).charAt(positionY);
+		char symb = field.get(positionY).charAt(positionX);
+		return symb;
+	}
+
+	public char getKey(int x, int y){
+		char symb = field.get((y + MAX_HEIGHT) % MAX_HEIGHT).charAt((x + MAX_WIDTH) % MAX_WIDTH);
 		return symb;
 	}
 	
-	public void changeWay(Ways newWay){
-		way = newWay;
+	public void changeWayUp(){
+		way = Ways.UP;
+	}
+
+	public void changeWayDown(){
+		way = Ways.DOWN;
+	}
+
+	public void changeWayLeft(){
+		way = Ways.LEFT;
+	}
+
+	public void changeWayRight(){
+		way = Ways.RIGHT;
 	}
 	
 	public void changePosition(){
@@ -54,8 +71,23 @@ public class Field{
 				break;
 		}
 	}
+
+	public void changeField(char value, int x, int y){
+		int rightX = (x + MAX_WIDTH) % MAX_WIDTH;
+		int rightY = (y + MAX_HEIGHT) % MAX_HEIGHT;
+		String line = field.get(rightY);
+		String newLine = "";
+		for(int i = 0; i < rightX; ++i){
+			newLine += line.charAt(i);
+		}
+		newLine += value;
+		for(int i = rightX + 1; i < line.length(); ++i){
+			newLine += line.charAt(i);
+		}
+		field.set(rightY, newLine);
+	}
 	
-	public enum Ways {UP, DOWN, RIGHT, LEFT};
+	private enum Ways {UP, DOWN, RIGHT, LEFT};
 	private int MAX_WIDTH = 25;
 	private int MAX_HEIGHT = 80;
 	private Ways way = Ways.RIGHT;
