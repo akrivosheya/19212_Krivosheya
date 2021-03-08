@@ -14,5 +14,6 @@ public class Addition implements Command{
 		secondOperand = context.get();
 		context.push(firstOperand);
 		context.push(firstOperand + secondOperand);
+		context.changePosition();
 	}
 }
