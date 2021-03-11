@@ -1,94 +1,154 @@
 import java.util.*;
 import java.lang.RuntimeException;
-import java.io.*;
 
-public class Context{
-	Context(Scanner scan){
+/** Special class that is used for interpritation befunge language program.
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
+public class Context {
+	/** Takes scan for creating of field.
+	 * @param scan - object for reading text of program.
+	 * @throws RuntimeExceptin
+	*/
+	public Context(Scanner scan) {
 		try {
 			field = new Field(scan);
-		} catch (RuntimeException error){
+		} catch (RuntimeException error) {
 			throw error;
 		}
 		stack = new ArrayDeque<Integer>();
-		Writer ow = new OutputStreamWriter(System.out);
-		writer = new PrintWriter(ow, true);
-		Reader ir = new InputStreamReader(System.in);
-		reader = new BufferedReader(ir);
+		contIO = new ContextIO();
 	}
 
-	public char getKey(){
+	/**
+	 * @return Returns command which field points to.
+	*/
+	public char getKey() {
 		return field.getKey();
 	}
 	
-	public int get(){
-		if(stack.size() == 0){
+	/**
+	 * @return Returns number in the top of stack. If stack is empty returns 0.
+	*/
+	public int get() {
+		if(stack.size() == 0) {
 			return 0;
 		}
 		return stack.getLast();
 	}
 	
-	public void pop(){
-		if(stack.size() == 0){
+	/**
+	 * Deletes number in the top of stack. If stack is empty does nothing.
+	*/
+	public void pop() {
+		if(stack.size() == 0) {
 			return;
 		}
 		stack.removeLast();
 	}
 	
-	public void push(int num){
+	/** Puts number in the top of stack.
+	 * @param num - number that is putting in the top of stack.
+	*/
+	public void push(int num) {
 		stack.addLast(num);
 	}
 
-	public void finishJob(){
+	/**
+	 * Changes flag isFinished to true.
+	*/
+	public void finishJob() {
 		isFinished = true;
 	}
 
-	public boolean jobIsFinished(){
+	/**
+	 * @return Returns value of flag isFinished
+	*/
+	public boolean jobIsFinished() {
 		return isFinished;
 	}
 
-	public int size(){
+	/**
+	 * @return Returns size of stack
+	*/
+	public int size() {
 		return stack.size();
 	}
 
-	public void changePosition(){
+	/**
+	 * Changes position in field in the direction defined in the field.
+	*/
+	public void changePosition() {
 		field.changePosition();
 	}
 
-	public void changeWayUp(){
+	/**
+	 * Changes direction of field to UP.
+	*/
+	public void changeWayUp() {
 		field.changeWayUp();
 	}
 
-	public void changeWayDown(){
+	/**
+	 * Changes direction of field to DOWN.
+	*/
+	public void changeWayDown() {
 		field.changeWayDown();
 	}
 
-	public void changeWayLeft(){
+	/**
+	 * Changes direction of field to LEFT.
+	*/
+	public void changeWayLeft() {
 		field.changeWayLeft();
 	}
 
-	public void changeWayRight(){
+	/**
+	 * Changes direction of field to RIGHT.
+	*/
+	public void changeWayRight() {
 		field.changeWayRight();
 	}
 
-	public BufferedReader getReader(){
-		return reader;
+	/**
+	 * @return Returns object with interfaces for reading and writing.
+	*/
+	public ContextIO getIO() {
+		return contIO;
 	}
 
-	public PrintWriter getWriter(){
-		return writer;
-	}
-
-	public char getKey(int x, int y){
+	/**
+	 * @return Returns command in the field by coordinates x and y.
+	 * @param x - x coordinate.
+	 * @param y - y coordinate.
+	*/
+	public char getKey(int x, int y) {
 		return field.getKey(x, y);
 	}
 
-	public void changeField(char value, int x, int y){
+	/**
+	 * Puts new command in the field by coordinates x and y.
+	 * @param x - x coordinate.
+	 * @param y - y coordinate.
+	*/
+	public void changeField(char value, int x, int y) {
 		field.changeField(value, x, y);
 	}
 	
+	/**
+	 * Class that contains text of program and directions.
+	*/
 	private Field field;
+	/**
+	 * Stack.
+	*/
 	private ArrayDeque<Integer> stack;
+	/**
+	 * flag with information of status of execution
+	*/
 	private boolean isFinished = false;
-	private PrintWriter writer;
-	private BufferedReader reader;
+	/**
+	 * Special object. Contains interfaces for reading and writing.
+	*/
+	private ContextIO contIO;
 }
