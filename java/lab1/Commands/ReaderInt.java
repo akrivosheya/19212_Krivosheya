@@ -1,17 +1,23 @@
 import java.lang.RuntimeException;
 import java.io.IOException;
 
-public class ReaderInt implements Command{
+/**
+ * Class for reading number. Implements from the Command interface
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
+public class ReaderInt implements Command {
+	/**
+	 * Reads number and puts it in stack.
+	 * @throws RuntimeException If reading ended with an error.
+	 * @param context - special object that contains stack and other attributes.
+	*/
 	@Override
-	public void execute(Context context){
+	public void execute(Context context) {
 		String text = null;
-		try {
-			text = context.getReader().readLine();
-		} catch (IOException error){
-			throw new RuntimeException("Can't read text");
-		}
+		text = context.getIO().readLine();
 		int numb = 0;
-		for(int i = 0; i < text.length(); ++i){
+		for(int i = 0; i < text.length(); ++i)  {
 			char symb = text.charAt(i);
 			if(!Character.isDigit(symb)){
 				break;

@@ -1,13 +1,19 @@
 import java.lang.RuntimeException;
 
-public class Navigator implements Command{
+/**
+ * Class for changing direction. Implements from the Command interface
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
+public class Navigator implements Command {
+	/**
+	 * Changes position by symbol in the field.
+	 * @param context - special object that contains stack and other attributes.
+	*/
 	@Override
-	public void execute(Context context){
-		if(context.size() < 1){
-			throw new RuntimeException("Stack is empty");
-		}
+	public void execute(Context context) {
 		char newWay = context.getKey();
-		switch(newWay){
+		switch(newWay) {
 			case '^':
 				context.changeWayUp();
 				break;

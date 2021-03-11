@@ -1,12 +1,21 @@
 import java.lang.RuntimeException;
 import java.util.Random;
 
-public class Randomizer implements Command{
+/**
+ * Class for choosing random direction. Implements from the Command interface
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
+public class Randomizer implements Command {
+	/**
+	 * Chooses random direction.
+	 * @param context - special object that contains stack and other attributes.
+	*/
 	@Override
-	public void execute(Context context){
+	public void execute(Context context) {
 		Random rand = new Random();
 		int randomNumb = rand.nextInt(COUNT_OF_WAYS);
-		switch(randomNumb){
+		switch(randomNumb) {
 			case 0:
 				context.changeWayUp();
 				break;
@@ -23,5 +32,5 @@ public class Randomizer implements Command{
 		context.changePosition();
 	}
 
-	private int COUNT_OF_WAYS = 3;
+	private int COUNT_OF_WAYS = 4;
 }

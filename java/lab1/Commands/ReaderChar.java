@@ -1,15 +1,20 @@
 import java.lang.RuntimeException;
 import java.io.IOException;
 
+/**
+ * Class for reading character. Implements from the Command interface
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
 public class ReaderChar implements Command{
+	/**
+	 * Reads character and puts its value in stack.
+	 * @throws RuntimeException If reading ended with an error.
+	 * @param context - special object that contains stack and other attributes.
+	*/
 	@Override
 	public void execute(Context context){
-		char symb;
-		try {
-			symb = (char)context.getReader().read();
-		} catch (IOException error){
-			throw new RuntimeException("Can't read text");
-		}
+		char symb = context.getIO().read();
 		context.push((int)symb);
 		context.changePosition();
 	}
