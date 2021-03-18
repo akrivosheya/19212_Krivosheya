@@ -16,7 +16,7 @@ public class Modulo implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2) {
-			throw new RuntimeException("Addition needs 2 operands");
+			throw new RuntimeException("Modulo needs 2 operands");
 		}
 		firstOperand = context.get();
 		context.pop();

@@ -16,7 +16,7 @@ public class Division implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2) {
-			throw new RuntimeException("Addition needs 2 operands");
+			throw new RuntimeException("Division needs 2 operands");
 		}
 		firstOperand = context.get();
 		context.pop();

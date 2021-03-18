@@ -1,4 +1,4 @@
-import java.lang.RuntimeException;
+import java.lang.*;
 import java.io.*;
 
 /**
@@ -13,13 +13,13 @@ public class StringMode implements Command {
 	*/
 	@Override
 	public void execute(Context context) {
-		String text = "";
+		StringBuilder text = new StringBuilder("");
 		context.changePosition();
 		while(context.getKey() != '"') {
-			text += context.getKey();
+			text.append(context.getKey());
 			context.changePosition();
 		}
-		context.getIO().println(text);
+		context.getIO().println(text.substring(0));
 		context.changePosition();
 	}
 }
