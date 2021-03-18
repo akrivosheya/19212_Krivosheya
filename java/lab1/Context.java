@@ -1,7 +1,7 @@
 import java.util.*;
 import java.lang.RuntimeException;
 
-/** Special class that is used for interpritation befunge language program.
+/** Special class that is used for interpretation befunge language program.
  * @author Alexandr Krivosheya
  * @version 1.0
 */
@@ -10,14 +10,13 @@ public class Context {
 	 * @param scan - object for reading text of program.
 	 * @throws RuntimeExceptin
 	*/
-	public Context(Scanner scan) {
+	public Context(Scanner scan, ContextIO initContIO) {
 		try {
 			field = new Field(scan);
 		} catch (RuntimeException error) {
 			throw error;
 		}
-		stack = new ArrayDeque<Integer>();
-		contIO = new ContextIO();
+		contIO = initContIO;
 	}
 
 	/**
@@ -142,7 +141,7 @@ public class Context {
 	/**
 	 * Stack.
 	*/
-	private ArrayDeque<Integer> stack;
+	private ArrayDeque<Integer> stack = new ArrayDeque<Integer>();
 	/**
 	 * flag with information of status of execution
 	*/

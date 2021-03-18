@@ -10,55 +10,82 @@ import java.lang.RuntimeException;
 public class Befunge{
  	/**
 	 * Accepts text in the befunge language and executes it.
- 	 * Prints message "Needs argument" if not to put argument.
- 	 * Prints message "Can't find file <file name>" if can't find file for execution.
-	 * Uses Factory and Context to execute the program.
-	 * Uses property file for Factory configuration.
-	 * If can't find properties file prints "Can't find file properties.txt".
-	 * If can't configurate Factory prints "Can't configurate Factory".
-	 * Prints "Can't use command <command name>" if file contains undefined command.
-	 * If the command was executed with an error prints this error.
 	 * @param argv - array that contains file name.
 	*/
-	public static void main(String[] argv) {
+	public void interpret(String[] argv, ContextIO contIO) {
 		if (argv.length < 1) {
-			System.out.println("Needs argument");
+			contIO.println("Needs argument");
 			return;
 		}
-		Context context = null;
+		context = null;
 		try (Scanner scan = new Scanner(new File(argv[0]))) {
-			context = new Context(scan);
+			context = new Context(scan, contIO);
 		} catch (IOException e){
-			System.out.println("Can't find file " + argv[0]);
+			contIO.println("Can't find file " + argv[0]);
 			return;
 		}
 		InputStream in = Befunge.class.getClassLoader().getResourceAsStream("properties.txt");
 		if (in == null) {
-			System.out.println("Can't find file properties.txt");
+			contIO.println("Can't find file properties.txt");
 			return;
 		}
 		if(!Factory.getInstance().configurate(in)) {
-			System.out.println("Can't configurate Factory");
+			contIO.println("Can't configurate Factory");
+			try {
+				in.close();
+			}
+			catch (IOException error) {
+				throw new RuntimeException();
+			}
 			return;
+		}
+		try {
+			in.close();
+		}
+		catch (IOException error) {
+			throw new RuntimeException();
 		}
 
 		while(true) {
 			Character key = context.getKey();
 			Command command = (Command)Factory.getInstance().getCommand(key.toString());
 			if(command == null){
-				System.out.println("Can't use command " + key);
+				contIO.println("Can't use command " + key);
 				return;
 			}
 			try {
 				command.execute(context);
 			} catch (RuntimeException error){
-				System.out.println(error);
+				contIO.println(error.toString());
 				return;
 			}
 			if (context.jobIsFinished()){
 				break;
 			}
 		}
+
 		return;
 	}
+
+	public int getForTest() {
+
+		return context.get();
+	}
+
+	public void popForTest() {
+		context.pop();
+	}
+
+	public boolean jobIsFinishedForTest() {
+		return context.jobIsFinished();
+	}
+
+
+	public int sizeForTest() {
+		return context.size();
+	}
+	/**
+	 * Special object that contains stack and field.
+	 */
+	private Context context;
 }
