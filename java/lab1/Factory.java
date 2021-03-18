@@ -12,10 +12,7 @@ public class Factory {
 	/**
 	 * Private constructor for creating only one object.
 	*/
-	private Factory(){
-		commands = new HashMap<>();
-		names = new Properties();
-	}
+	private Factory(){}
 
 	/**
 	 * Retruns object of command by symbol of this command.
@@ -41,7 +38,6 @@ public class Factory {
 				throw new RuntimeException("Can't find class" + name);
 			}
 		}
-
 		try {
 			comm = cl.getDeclaredConstructor().newInstance();
 		} catch (NoSuchMethodException | InstantiationException |
@@ -77,6 +73,10 @@ public class Factory {
 		return true;
 	}
 
+	public int getSizeForTest(){
+		return commands.size();
+	}
+
 	/**
 	 * Only one object of class.
 	*/
@@ -84,11 +84,11 @@ public class Factory {
 	/**
 	 * Buffered commands.
 	*/
-	private Map<String, Class<?>> commands;
+	private Map<String, Class<?>> commands = new HashMap<>();
 	/**
 	 * All used commands, their symbols and full names.
 	*/
-	Properties names;
+	Properties names = new Properties();
 	/**
 	 * End Of File.
 	*/

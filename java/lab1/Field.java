@@ -36,9 +36,6 @@ public class Field{
 			}
 			field.set(i, line);
 		}
-		for(int i = 0; i < field.size(); ++i){
-			System.out.println(field.get(i));
-		}
 	}
 
 	/**
