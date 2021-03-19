@@ -2,6 +2,7 @@ import java.util.*;
 import java.lang.*;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Logger;
 
 /**
  * Class for creating commands
@@ -12,7 +13,9 @@ public class Factory {
 	/**
 	 * Private constructor for creating only one object.
 	*/
-	private Factory(){}
+	private Factory(){
+		log.info("Creates Factory");
+	}
 
 	/**
 	 * Retruns object of command by symbol of this command.
@@ -24,17 +27,21 @@ public class Factory {
 	public Object getCommand(String key) {
 		String name = null;
 		if((name = names.getProperty(key)) == null) {
+			log.info("Wrong name");
 			return null;
 		}
 		Class<?> cl = null;
 		Object comm = null;
 		if(commands.containsKey(key)) {
+			log.info("Already contains " + key);
 			cl = commands.get(key);
 		}
 		else {
 			try {
+				log.info("Doesn't contain " + key);
 				cl = Class.forName(name);
 			} catch (ClassNotFoundException error) {
+				log.throwing("Factory", "getCommand", error);
 				throw new RuntimeException("Can't find class" + name);
 			}
 		}
@@ -42,10 +49,12 @@ public class Factory {
 			comm = cl.getDeclaredConstructor().newInstance();
 		} catch (NoSuchMethodException | InstantiationException |
 				IllegalAccessException | InvocationTargetException error) {
+			log.throwing("Factory", "getCommand", error);
 			throw new RuntimeException("Can't create an instance of the class" + name);
 		}
 
 		commands.put(key, cl);
+		log.info("Puts " + key + " and " + cl);
 		return comm;
 	}
 
@@ -54,8 +63,10 @@ public class Factory {
 	*/
 	public static Factory getInstance(){
 		if(instance == null){
+			log.info("Doesn't have Factory");
 			instance = new Factory();
 		}
+		log.info("Already has Factory");
 		return instance;
 	}
 
@@ -68,12 +79,15 @@ public class Factory {
 		try {
 			names.load(reader);
 		} catch (IOException error) {
+			log.throwing("Factory", "getCommand", error);
 			return false;
 		}
+		log.info("Finished configuration");
 		return true;
 	}
 
 	public int getSizeForTest(){
+		log.info("return" + commands.size());
 		return commands.size();
 	}
 
@@ -93,4 +107,5 @@ public class Factory {
 	 * End Of File.
 	*/
 	private int EOF = -1;
+	static final Logger log = Logger.getLogger(Factory.class.getName());
 };

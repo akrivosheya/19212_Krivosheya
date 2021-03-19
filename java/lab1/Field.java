@@ -1,4 +1,6 @@
 import java.util.*;
+import java.util.logging.Logger;
+import java.lang.StringBuilder;
 
 /** Special class that contains text of program and direction.
  * @author Alexandr Krivosheya
@@ -17,7 +19,8 @@ public class Field{
 			String line = null;
 			line = scan.nextLine();
 			if(line.length() >= MAX_WIDTH){
-				throw new RuntimeException("File has more then " + MAX_WIDTH);
+				log.info("Width " + line.length() + " > " + MAX_WIDTH);
+				throw new RuntimeException("File has more then " + MAX_WIDTH + " columns");
 			}
 			if(maxLength < line.length()){
 				maxLength = line.length();
@@ -25,8 +28,10 @@ public class Field{
 			field.add(line);
 			++row;
 		}
+		log.info("Width is " + maxLength);
 		if(row >= MAX_HEIGHT && scan.hasNextLine()){
-			throw new RuntimeException("File has more then " + MAX_HEIGHT);
+			log.info("Height " + row + " > " + MAX_HEIGHT);
+			throw new RuntimeException("File has more then " + MAX_HEIGHT + " rows");
 		}
 		for(int i = 0; i < field.size(); ++i){
 			String line = field.get(i);
@@ -36,6 +41,7 @@ public class Field{
 			}
 			field.set(i, line);
 		}
+		log.info("Initialized");
 	}
 
 	/**
@@ -43,6 +49,7 @@ public class Field{
 	*/
 	public char getKey(){
 		char symb = field.get(positionY).charAt(positionX);
+		log.info("return " + symb);
 		return symb;
 	}
 
@@ -53,6 +60,7 @@ public class Field{
 	*/
 	public char getKey(int x, int y){
 		char symb = field.get((field.size() - 1 - (y % field.size())) % field.size()).charAt(((x % maxLength) + maxLength) % maxLength);
+		log.info("return " + symb + " from " + positionX + ":" + positionY);
 		return symb;
 	}
 	
@@ -60,6 +68,7 @@ public class Field{
 	 * Changes direction to UP.
 	*/
 	public void changeWayUp(){
+		log.info("Way = UP");
 		way = Ways.UP;
 	}
 
@@ -67,6 +76,7 @@ public class Field{
 	 * Changes directionto DOWN.
 	*/
 	public void changeWayDown(){
+		log.info("Way = DOWN");
 		way = Ways.DOWN;
 	}
 
@@ -74,6 +84,7 @@ public class Field{
 	 * Changes direction to LEFT.
 	*/
 	public void changeWayLeft(){
+		log.info("Way = LEFT");
 		way = Ways.LEFT;
 	}
 
@@ -81,6 +92,7 @@ public class Field{
 	 * Changes direction to RIGHT.
 	*/
 	public void changeWayRight(){
+		log.info("Way = RIGHT");
 		way = Ways.RIGHT;
 	}
 	
@@ -91,14 +103,18 @@ public class Field{
 		switch(way){
 			case UP:
 				positionY = (positionY + field.size() - 1) % field.size();
+				log.info("Goes up: positionY = " + positionY);
 				break;
 			case DOWN:
 				positionY = (positionY + field.size() + 1) % field.size();
+				log.info("Goes down: positionY = " + positionY);
 				break;
 			case RIGHT:
 				positionX = (positionX + maxLength + 1) % maxLength;
+				log.info("Goes right: positionX = " + positionX);
 				break;
 			case LEFT:
+				log.info("Goes left: positionX = " + positionX);
 				positionX = (positionX + maxLength - 1) % maxLength;
 				break;
 		}
@@ -113,15 +129,16 @@ public class Field{
 		int rightX = ((x % maxLength) + maxLength) % maxLength;
 		int rightY = (field.size() - 1 - (y % field.size())) % field.size();
 		String line = field.get(rightY);
-		String newLine = "";
+		StringBuilder newLine = new StringBuilder("");
 		for(int i = 0; i < rightX; ++i){
-			newLine += line.charAt(i);
+			newLine.append(line.charAt(i));
 		}
-		newLine += value;
+		newLine.append(value);
 		for(int i = rightX + 1; i < line.length(); ++i){
-			newLine += line.charAt(i);
+			newLine.append(line.charAt(i));
 		}
-		field.set(rightY, newLine);
+		log.info("Sets line " + newLine + " to " + y + "row from down");
+		field.set(rightY, newLine.toString());
 	}
 	
 	/**
@@ -142,4 +159,5 @@ public class Field{
 	private int maxLength = 0;
 	/** Contains text of program like array of strings. */
 	private ArrayList<String> field;
+	static final Logger log = Logger.getLogger(Field.class.getName());
 }

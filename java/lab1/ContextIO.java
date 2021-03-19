@@ -1,4 +1,7 @@
 import java.io.*;
+import java.util.*;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Class that contains interfacese for reading and writing.
@@ -12,6 +15,7 @@ public class ContextIO{
 		reader = new BufferedReader(ir);
 		Writer ow = new OutputStreamWriter(System.out);
 		writer = new PrintWriter(ow, true);
+		log.info("Initialized reader and writer");
 	}
 	
 	/**
@@ -19,6 +23,7 @@ public class ContextIO{
 	 * @param numb - number for printing.
 	*/
 	public void printInt(int numb) {
+		log.info("Prints " + numb);
 		writer.println(numb);
 	}
 	
@@ -27,6 +32,7 @@ public class ContextIO{
 	 * @param text - text for printing.
 	*/
 	public void println(String text) {
+		log.info("Prints " + text);
 		writer.println(text);
 	}
 
@@ -35,6 +41,7 @@ public class ContextIO{
 	 * @param symb - character for printing.
 	*/
 	public void printChar(char symb){
+		log.info("Prints " + symb);
 		writer.println(symb);
 	}
 
@@ -48,8 +55,10 @@ public class ContextIO{
 		try {
 			text = reader.readLine();
 		} catch (IOException error) {
+			log.throwing("ContextIO", "readLine", error);
 			throw new RuntimeException("Can't read text");
 		}
+		log.info("return " + text);
 		return text;
 	}
 
@@ -63,8 +72,10 @@ public class ContextIO{
 		try {
 			symb = (char)reader.read();
 		} catch (IOException error) {
+			log.throwing("ContextIO", "read", error);
 			throw new RuntimeException("Can't read text");
 		}
+		log.info("return " + symb);
 		return symb;
 	}
 	
@@ -76,4 +87,5 @@ public class ContextIO{
 	 * Object for writing.
 	*/
 	private PrintWriter writer;
+	static final Logger log = Logger.getLogger(ContextIO.class.getName());
 }
