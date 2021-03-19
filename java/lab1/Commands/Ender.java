@@ -1,3 +1,5 @@
+import java.util.logging.Logger;
+
 /**
  * Class for finishing executing. Implements from the Command interface
  * @author Alexandr Krivosheya
@@ -11,5 +13,7 @@ public class Ender implements Command {
 	@Override
 	public void execute(Context context) {
 		context.finishJob();
+		log.info("Finishes job");
 	}
+	static final Logger log = Logger.getLogger(Ender.class.getName());
 }

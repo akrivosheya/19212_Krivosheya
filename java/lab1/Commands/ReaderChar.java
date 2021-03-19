@@ -1,5 +1,6 @@
 import java.lang.RuntimeException;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Class for reading character. Implements from the Command interface
@@ -15,7 +16,9 @@ public class ReaderChar implements Command{
 	@Override
 	public void execute(Context context){
 		char symb = context.getIO().read();
+		log.info("Pushes " +symb);
 		context.push((int)symb);
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(ReaderChar.class.getName());
 }

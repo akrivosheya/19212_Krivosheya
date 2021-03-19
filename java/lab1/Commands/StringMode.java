@@ -1,5 +1,6 @@
 import java.lang.*;
 import java.io.*;
+import java.util.logging.Logger;
 
 /**
  * Class for writing text. Implements from the Command interface
@@ -19,7 +20,9 @@ public class StringMode implements Command {
 			text.append(context.getKey());
 			context.changePosition();
 		}
-		context.getIO().println(text.substring(0));
+		log.info("prints " + text.toString());
+		context.getIO().println(text.toString());
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(StringMode.class.getName());
 }

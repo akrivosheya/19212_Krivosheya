@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for taking negative value of number in the top of stack. Implements from the Command interface
@@ -15,11 +16,14 @@ public class Negation implements Command {
 	public void execute(Context context) {
 		int operand;
 		if(context.size() < 1) {
+			log.info(context.size() + " elements");
 			throw new RuntimeException("Stack is empty");
 		}
 		operand = context.get();
-		operand = (operand == 0) ? 1 : 0;
-		context.push(operand);
+		int newOperand = (operand == 0) ? 1 : 0;
+		context.push(newOperand);
 		context.changePosition();
+		log.info("!" + operand + " = " + newOperand);
 	}
+	static final Logger log = Logger.getLogger(Negation.class.getName());
 }

@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for swappsing 2 numbers in the top of stack. Implements from the Command interface
@@ -15,6 +16,7 @@ public class Swapper implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2) {
+			log.info(context.size() + " elements");
 			throw new RuntimeException("Swapper needs 2 operands");
 		}
 		firstOperand = context.get();
@@ -24,5 +26,7 @@ public class Swapper implements Command {
 		context.push(firstOperand);
 		context.push(secondOperand);
 		context.changePosition();
+		log.info("Swaps " + firstOperand + " and " + secondOperand);
 	}
+	static final Logger log = Logger.getLogger(Swapper.class.getName());
 }

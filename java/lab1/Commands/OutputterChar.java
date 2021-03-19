@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for printing character with value in the top of stack. Implements from the Command interface
@@ -12,7 +13,9 @@ public class OutputterChar implements Command {
 	*/
 	@Override
 	public void execute(Context context) {
+		log.info("Prints " + (char)context.get());
 		context.getIO().printChar((char)context.get());
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(OutputterChar.class.getName());
 }

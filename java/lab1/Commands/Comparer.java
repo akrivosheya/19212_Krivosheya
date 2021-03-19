@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.*;
 
 /**
  * Class for comparing two numbers. Implements from the Command interface
@@ -16,6 +17,7 @@ public class Comparer implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2){
+			log.info(context.size() + " operands");
 			throw new RuntimeException("Comparer needs 2 operands");
 		}
 		firstOperand = context.get();
@@ -24,5 +26,7 @@ public class Comparer implements Command {
 		context.push(firstOperand);
 		context.push((firstOperand > secondOperand) ? 1 : 0);
 		context.changePosition();
+		log.info(firstOperand + " > " + secondOperand + " = " + (firstOperand > secondOperand));
 	}
+	static final Logger log = Logger.getLogger(Comparer.class.getName());
 }

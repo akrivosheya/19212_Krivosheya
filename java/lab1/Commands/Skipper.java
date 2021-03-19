@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for duplicating next command. Implements from the Command interface
@@ -13,7 +14,9 @@ public class Skipper implements Command {
 	*/
 	@Override
 	public void execute(Context context) {
+		log.info("Changes position twice");
 		context.changePosition();
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(Skipper.class.getName());
 }

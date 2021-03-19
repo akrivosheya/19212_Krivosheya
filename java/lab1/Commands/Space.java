@@ -1,3 +1,5 @@
+import java.util.logging.Logger;
+
 /**
  * Class for with empty command. Implements from the Command interface
  * @author Alexandr Krivosheya
@@ -10,6 +12,8 @@ public class Space implements Command{
 	*/
 	@Override
 	public void execute(Context context){
+		log.info("Changes position");
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(Space.class.getName());
 }

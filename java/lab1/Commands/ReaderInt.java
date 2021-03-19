@@ -1,5 +1,6 @@
 import java.lang.RuntimeException;
 import java.io.IOException;
+import java.util.logging.Logger;
 
 /**
  * Class for reading number. Implements from the Command interface
@@ -24,7 +25,9 @@ public class ReaderInt implements Command {
 			}
 			numb = numb * 10 + Character.digit(symb, Character.MAX_RADIX);
 		}
+		log.info("Pushes " + numb);
 		context.push(numb);
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(ReaderInt.class.getName());
 }

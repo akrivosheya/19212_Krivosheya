@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for choosing direction by value in the top of stack. Implements from the Command interface
@@ -16,15 +17,19 @@ public class GorizontalIf implements Command{
 	public void execute(Context context){
 		int value;
 		if(context.size() < 1){
+			log.info(context.size() + "elements");
 			throw new RuntimeException("Stack is empty");
 		}
 		value = context.get();
 		if(value != 0){
+			log.info("!= 0 => LEFT");
 			context.changeWayLeft();
 		}
 		else{
+			log.info("== 0 => RIGHT");
 			context.changeWayRight();
 		}
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(GorizontalIf.class.getName());
 }

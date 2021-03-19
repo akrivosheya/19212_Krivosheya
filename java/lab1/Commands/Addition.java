@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.*;
 
 /**
  * Class for adding two numbers. Implements from the Command interface
@@ -15,6 +16,7 @@ public class Addition implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2) {
+			log.info(context.size() + " elements");
 			throw new RuntimeException("Addition needs 2 operands");
 		}
 		firstOperand = context.get();
@@ -23,5 +25,7 @@ public class Addition implements Command {
 		context.push(firstOperand);
 		context.push(firstOperand + secondOperand);
 		context.changePosition();
+		log.info(firstOperand + " + " + secondOperand + " = " + (firstOperand + secondOperand));
 	}
+	static final Logger log = Logger.getLogger(Addition.class.getName());
 }

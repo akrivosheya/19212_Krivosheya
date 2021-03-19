@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for getting symbol in defined position of field. Implements from the Command interface
@@ -24,5 +25,7 @@ public class Getter implements Command {
 		char value = context.getKey(x, y);
 		context.push((int)value);
 		context.changePosition();
+		log.info("Pushes " + value + " from " + x + ":" + y);
 	}
+	static final Logger log = Logger.getLogger(Getter.class.getName());
 }

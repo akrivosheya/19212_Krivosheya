@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for duplicating number in the top of stack. Implements from the Command interface
@@ -15,10 +16,13 @@ public class Duplicator implements Command {
 	public void execute(Context context) {
 		int value;
 		if(context.size() < 1) {
+			log.info(context.size() + " operands");
 			throw new RuntimeException("Stack is empty");
 		}
 		value = context.get();
 		context.push(value);
 		context.changePosition();
+		log.info("Duplicates " + value);
 	}
+	static final Logger log = Logger.getLogger(Duplicator.class.getName());
 }

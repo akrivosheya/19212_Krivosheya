@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for subtracting numbers in the top of stack. Implements from the Command interface
@@ -16,6 +17,7 @@ public class Subtraction implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2) {
+			log.info(context.size() + " elements");
 			throw new RuntimeException("Subtraction needs 2 operands");
 		}
 		firstOperand = context.get();
@@ -24,5 +26,7 @@ public class Subtraction implements Command {
 		context.push(firstOperand);
 		context.push(firstOperand - secondOperand);
 		context.changePosition();
+		log.info(firstOperand + " - " + secondOperand + " = " + (firstOperand - secondOperand));
 	}
+	static final Logger log = Logger.getLogger(Subtraction.class.getName());
 }

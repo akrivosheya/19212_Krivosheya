@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for printing number in the top of stack. Implements from the Command interface
@@ -12,7 +13,9 @@ public class OutputterInt implements Command {
 	*/
 	@Override
 	public void execute(Context context) {
+		log.info("Prints " + context.get());
 		context.getIO().printInt(context.get());
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(OutputterInt.class.getName());
 }

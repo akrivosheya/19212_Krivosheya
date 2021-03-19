@@ -1,4 +1,6 @@
 import java.lang.RuntimeException;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 /**
  * Class for division two numbers. Implements from the Command interface
@@ -16,16 +18,20 @@ public class Division implements Command {
 	public void execute(Context context) {
 		int firstOperand, secondOperand;
 		if(context.size() < 2) {
+			log.info(context.size() + " operands");
 			throw new RuntimeException("Division needs 2 operands");
 		}
 		firstOperand = context.get();
 		context.pop();
 		secondOperand = context.get();
 		if (secondOperand == 0) {
+			log.info("secondOperand == 0");
 			throw new RuntimeException("Division by zero");
 		}
 		context.push(firstOperand);
 		context.push(firstOperand / secondOperand);
 		context.changePosition();
+		log.info(firstOperand + " / " + secondOperand + " = " + firstOperand / secondOperand);
 	}
+	static final Logger log = Logger.getLogger(Division.class.getName());
 }

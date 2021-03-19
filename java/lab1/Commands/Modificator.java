@@ -1,4 +1,5 @@
 import java.lang.RuntimeException;
+import java.util.logging.Logger;
 
 /**
  * Class for putting symbol in defined position of field. Implements from the Command interface
@@ -14,6 +15,7 @@ public class Modificator implements Command {
 	@Override
 	public void execute(Context context) {
 		if(context.size() < 3) {
+			log.info(context.size() + " elements");
 			throw new RuntimeException("Modificator needs 3 operands");
 		}
 		int value, x, y;
@@ -25,6 +27,8 @@ public class Modificator implements Command {
 		context.push(x);
 		context.push(value);
 		context.changeField((char)value, x, y);
+		log.info("Puts " + (char)value + " to " +  x + ":" + y);
 		context.changePosition();
 	}
+	static final Logger log = Logger.getLogger(Modificator.class.getName());
 }
