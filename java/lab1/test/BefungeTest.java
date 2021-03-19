@@ -5,6 +5,19 @@ import static org.junit.jupiter.api.Assertions.*;
 class BefungeTest {
 
     @org.junit.jupiter.api.Test
+    void FactoryBuf() {
+        InputStream in = Befunge.class.getClassLoader().getResourceAsStream("properties.txt");
+        Factory.getInstance().configurate(in);
+        Factory.getInstance().getCommand(String.valueOf('@'));
+        Factory.getInstance().getCommand(String.valueOf('p'));
+        Factory.getInstance().getCommand(String.valueOf('p'));
+        Factory.getInstance().getCommand(String.valueOf('\''));
+        Factory.getInstance().getCommand(String.valueOf('@'));
+        Factory.getInstance().getCommand(String.valueOf('\''));
+        assertEquals(3, Factory.getInstance().getSizeForTest());
+    }
+
+    @org.junit.jupiter.api.Test
     void isFinished() {
         Befunge bef = new Befunge();
         StringBuilder string = new StringBuilder("");
@@ -14,6 +27,26 @@ class BefungeTest {
         assertEquals(0, bef.sizeForTest());
         assertTrue(bef.jobIsFinishedForTest());
         assertEquals("", string.toString());
+    }
+
+    @org.junit.jupiter.api.Test
+    void tooBig1() {
+        Befunge bef = new Befunge();
+        StringBuilder string = new StringBuilder("");
+        String[] buf = {""};
+        String[] argv = {"C:\\Users\\aleks\\IdeaProjects\\TestBefunge\\src\\main\\resources\\tooBig1.txt"};
+        bef.interpret(argv, new ContextIOForTest(string, buf));
+        assertEquals("java.lang.RuntimeException: File has more then 25 columns", string.toString());
+    }
+
+    @org.junit.jupiter.api.Test
+    void tooBig2() {
+        Befunge bef = new Befunge();
+        StringBuilder string = new StringBuilder("");
+        String[] buf = {""};
+        String[] argv = {"C:\\Users\\aleks\\IdeaProjects\\TestBefunge\\src\\main\\resources\\tooBig2.txt"};
+        bef.interpret(argv, new ContextIOForTest(string, buf));
+        assertEquals("java.lang.RuntimeException: File has more then 80 rows", string.toString());
     }
 
     @org.junit.jupiter.api.Test
@@ -514,18 +547,5 @@ class BefungeTest {
         assertEquals('A', (char)bef.getForTest());
         assertTrue(bef.jobIsFinishedForTest());
         assertEquals("", string.toString());
-    }
-
-    @org.junit.jupiter.api.Test
-    void FactoryBuf() {
-        InputStream in = Befunge.class.getClassLoader().getResourceAsStream("properties.txt");
-        Factory.getInstance().configurate(in);
-        Factory.getInstance().getCommand(String.valueOf('@'));
-        Factory.getInstance().getCommand(String.valueOf('p'));
-        Factory.getInstance().getCommand(String.valueOf('p'));
-        Factory.getInstance().getCommand(String.valueOf('\''));
-        Factory.getInstance().getCommand(String.valueOf('@'));
-        Factory.getInstance().getCommand(String.valueOf('\''));
-        assertEquals(3, Factory.getInstance().getSizeForTest());
     }
 }
