@@ -103,9 +103,5 @@ public class Factory {
 	 * All used commands, their symbols and full names.
 	*/
 	Properties names = new Properties();
-	/**
-	 * End Of File.
-	*/
-	private int EOF = -1;
 	static final Logger log = Logger.getLogger(Factory.class.getName());
 };
