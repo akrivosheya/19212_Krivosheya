@@ -31,29 +31,20 @@ public class Befunge{
 			contIO.println(error.toString());
 			return;
 		}
-		InputStream in = Befunge.class.getClassLoader().getResourceAsStream("properties.txt");
-		if (in == null) {
-			log.info("in == null");
-			contIO.println("Can't find file properties.txt");
-			return;
-		}
-		if(!Factory.getInstance().configurate(in)) {
-			contIO.println("Can't configurate Factory");
-			try {
-				in.close();
+		try(InputStream in = Befunge.class.getClassLoader().getResourceAsStream("properties.txt")){
+			if (in == null) {
+				log.info("in == null");
+				contIO.println("Can't find file properties.txt");
+				return;
 			}
-			catch (IOException error) {
-				log.throwing("Befunge", "interpret", error);
-				throw new RuntimeException();
+			if(!Factory.getInstance().configurate(in)) {
+				contIO.println("Can't configurate Factory");
 			}
-			return;
-		}
-		try {
-			in.close();
 		}
 		catch (IOException error) {
 			log.throwing("Befunge", "interpret", error);
-			throw new RuntimeException();
+			contIO.println(error.toString());
+			return;
 		}
 
 		while(true) {
