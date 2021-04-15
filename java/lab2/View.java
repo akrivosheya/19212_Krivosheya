@@ -10,6 +10,8 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeType;
 import java.util.*;
+import javafx.animation.AnimationTimer;
+import java.time.Duration;
 
 /**
  * Class for showing process of game
@@ -39,45 +41,40 @@ public class View extends Application {
 	for(Rectangle rectangle : rectangles){
 		rectangle.setOnMousePressed(new EventHandler<MouseEvent>() {
  
-            @Override
-            public void handle(MouseEvent event) {
-		oldX = event.getSceneX();
-		oldY = event.getSceneY();
-            }
-        });
+            		@Override
+            		public void handle(MouseEvent event) {
+				oldX = event.getSceneX();
+				oldY = event.getSceneY();
+            		}
+        		});
 		rectangle.setOnMouseDragged(new EventHandler<MouseEvent>() {
  
-            @Override
-            public void handle(MouseEvent event) {
-		double x = event.getSceneX() - (oldX - rectangle.getX());
-		double y = event.getSceneY() - (oldY - rectangle.getY());
-		int res = 0;
-		try{
-		if((res = contr.move(rectangle.getX(), rectangle.getY(),
+            		@Override
+            		public void handle(MouseEvent event) {
+				double x = event.getSceneX() - (oldX - rectangle.getX());
+				double y = event.getSceneY() - (oldY - rectangle.getY());
+				int res = 0;
+				try{
+					if((res = contr.move(rectangle.getX(), rectangle.getY(),
 					x, y)) == CANT_MOVE){
-			return;
-		}
-		}catch(Exception e){
-			System.out.println("bad");
-		}
-		if(res == IS_FINISH){
-			stop();
-        		Scene scene = new Scene(root, 600, 600, Color.GREY);
-        		primaryStage.setScene(scene);
-        		primaryStage.show();
-			launch();
-			return;
-		}
-		if(res == MOVE_HORIZONTAL){
-                	rectangle.setX(x);
-		}else{
-                	rectangle.setY(y);
-		}
-		oldX = event.getSceneX();
-		oldY = event.getSceneY();
-            }
-        });
-	root.getChildren().add(rectangle);
+					return;
+				}
+				}catch(Exception e){
+					System.out.println("bad");//Change
+				}
+				if(res == IS_FINISH){
+					//Checking
+				}
+				if(res == MOVE_HORIZONTAL){
+                			rectangle.setX(x);
+				}else{
+                			rectangle.setY(y);
+				}
+				oldX = event.getSceneX();
+				oldY = event.getSceneY();
+            			}
+        		});
+			root.getChildren().add(rectangle);
 	}
 		
 

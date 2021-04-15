@@ -87,7 +87,7 @@ public class Controller{
 							field[i * MAX_COORDINATE + positionX] = true;
 						}
 						platforms.add(new Barrier((double)positionX * SIZE_OF_BLOCK, (double)(positionY + 1) * SIZE_OF_BLOCK,
-							(double)positionX * SIZE_OF_BLOCK + width, (double)(positionY) * SIZE_OF_BLOCK,
+							(double)positionX * SIZE_OF_BLOCK + width * SIZE_OF_BLOCK, (double)(positionY) * SIZE_OF_BLOCK,
 							Platform.Type.HORIZONTAL));
 						rectangles.add(createRectangle(SIZE_OF_BLOCK, width * SIZE_OF_BLOCK, (double)positionX * SIZE_OF_BLOCK,
 								(double)(MAX_COORDINATE - 1 - positionY) * SIZE_OF_BLOCK, Color.AZURE));

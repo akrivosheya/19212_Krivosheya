@@ -29,6 +29,12 @@ public class Field {
 				}
 			}
 		}
+		/*for(int i = 0; i < platforms.size(); ++i){
+			for(int j = 0; j < platforms.size(); ++j){
+				System.out.print(tabOfDependence.get(i * platforms.size() + j) + " ");
+			}
+			System.out.println();
+		}*/
 	}
 
 	public boolean checkMove(int index, double coordX, double coordY, List<Platform> platforms){
@@ -46,7 +52,9 @@ public class Field {
 					}
 				}
 				if(typeOfPlatform == Platform.Type.HORIZONTAL){
-					if(coordX > 0 && platforms.get(i).conflictsRight(platforms.get(index))){
+					if(coordX > 0 && (platforms.get(i).conflictsRight(platforms.get(index)) ||
+						(rightBottomCornerX - platforms.get(index).getRightBottomX() < MIN &&
+						!platforms.get(index).isMouse()))){
 						return false;
 					}
 					if(coordX < 0 && (platforms.get(i).conflictsLeft(platforms.get(index)) ||
