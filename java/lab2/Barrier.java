@@ -1,6 +1,6 @@
 public class Barrier implements Platform{
-    public Barrier(double initLeftTopX, double initLeftTopY, double initRightBotX,
-                   double initRightBotY, Type initType){
+    public Barrier(int initLeftTopX, int initLeftTopY, int initRightBotX,
+                   int initRightBotY, Type initType){
         leftTopCornerX = initLeftTopX;
         leftTopCornerY = initLeftTopY;
         rightBottomCornerX = initRightBotX;
@@ -8,58 +8,58 @@ public class Barrier implements Platform{
         type = initType;
     }
     @Override
-    public double getLeftTopX(){
+    public int getLeftTopX(){
         return leftTopCornerX;
     }
     @Override
-    public double getLeftTopY(){
+    public int getLeftTopY(){
         return leftTopCornerY;
     }
     @Override
-    public double getRightBottomX(){
+    public int getRightBottomX(){
         return rightBottomCornerX;
     }
     @Override
-    public double getRightBottomY(){
+    public int getRightBottomY(){
         return rightBottomCornerY;
     }
 
 	@Override
-	public double getHeight(){
+	public int getHeight(){
 		return leftTopCornerY - rightBottomCornerY;
 	}
 
-	public double getWidth(){
+	public int getWidth(){
 		return rightBottomCornerX - leftTopCornerX;
 	}
 
     @Override
     public boolean conflictsDown(Platform platform){
         return (platform.getLeftTopY() > leftTopCornerY) && 
-		(platform.getRightBottomY() - leftTopCornerY < MIN) &&
-                (platform.getRightBottomX() > leftTopCornerX + MIN) &&
-                (platform.getLeftTopX() + MIN < rightBottomCornerX);
+		(platform.getRightBottomY() == leftTopCornerY) &&
+                (platform.getRightBottomX() > leftTopCornerX) &&
+                (platform.getLeftTopX() < rightBottomCornerX);
     }
     @Override
     public boolean conflictsUp(Platform platform){
         return (rightBottomCornerY > platform.getRightBottomY()) &&
-		(rightBottomCornerY - platform.getLeftTopY() < MIN) &&
-            	(platform.getRightBottomX() > leftTopCornerX + MIN) &&
-            	(platform.getLeftTopX() + MIN < rightBottomCornerX);
+		(rightBottomCornerY == platform.getLeftTopY()) &&
+            	(platform.getRightBottomX() > leftTopCornerX) &&
+            	(platform.getLeftTopX() < rightBottomCornerX);
     }
     @Override
     public boolean conflictsRight(Platform platform){
         return (leftTopCornerX > platform.getLeftTopX()) &&
-		 (leftTopCornerX - platform.getRightBottomX() < MIN) &&
-                (platform.getRightBottomY() + MIN < leftTopCornerY) &&
-                (platform.getLeftTopY() > rightBottomCornerY + MIN);
+		 (leftTopCornerX == platform.getRightBottomX()) &&
+                (platform.getRightBottomY() < leftTopCornerY) &&
+                (platform.getLeftTopY() > rightBottomCornerY);
     }
     @Override
     public boolean conflictsLeft(Platform platform){
         return (platform.getRightBottomX() > rightBottomCornerX) &&
-		(platform.getLeftTopX() - rightBottomCornerX < MIN) &&
-                (platform.getRightBottomY() + MIN < leftTopCornerY) &&
-                (platform.getLeftTopY() > rightBottomCornerY + MIN);
+		(platform.getLeftTopX() == rightBottomCornerX) &&
+                (platform.getRightBottomY() < leftTopCornerY) &&
+                (platform.getLeftTopY() > rightBottomCornerY);
     }
 
     @Override
@@ -73,18 +73,17 @@ public class Barrier implements Platform{
     }
 
     @Override
-    public void move(double coordX, double coordY){
+    public void move(int coordX, int coordY){
         leftTopCornerX += coordX;
         rightBottomCornerX += coordX;
         leftTopCornerY += coordY;
         rightBottomCornerY += coordY;
     }
 
-    private double leftTopCornerX;
-    private double leftTopCornerY;
-    private double rightBottomCornerX;
-    private double rightBottomCornerY;
+    private int leftTopCornerX;
+    private int leftTopCornerY;
+    private int rightBottomCornerX;
+    private int rightBottomCornerY;
     private Type type;
     private boolean isMouse = false;
-    private int MIN = 2;
 }

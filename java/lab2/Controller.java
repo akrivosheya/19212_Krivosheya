@@ -3,6 +3,7 @@ import java.util.*;
 import java.io.*;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.StrokeType;
+import java.lang.Math;
 
 /** Class that connects View and Model.
  * @author Alexandr Krivosheya
@@ -47,10 +48,10 @@ public class Controller{
 							field[MOUSE_Y_IN_FIELD * MAX_COORDINATE + position + i] = false;
 						}
 						hasMouse = true;
-						platforms.add(new Mouse((double)position * SIZE_OF_BLOCK, MOUSE_Y_COORDINATE_MODEL,
-							(double)position * SIZE_OF_BLOCK + MOUSE_WIDTH, MOUSE_Y_COORDINATE_MODEL - MOUSE_HEIGHT));
-						rectangles.add(createRectangle(MOUSE_HEIGHT, MOUSE_WIDTH, (double)position * SIZE_OF_BLOCK,
-								MOUSE_Y_COORDINATE_VIEW, Color.GOLD));
+						platforms.add(new Mouse(position, MOUSE_Y_COORDINATE_MODEL,
+							position + MOUSE_WIDTH, MOUSE_Y_COORDINATE_MODEL - MOUSE_HEIGHT));
+						rectangles.add(createRectangle(MOUSE_HEIGHT * SIZE_OF_BLOCK, MOUSE_WIDTH * SIZE_OF_BLOCK, 
+								(double)position * SIZE_OF_BLOCK, MOUSE_Y_COORDINATE_VIEW, Color.GOLD));
 						break;
 					case VERTICAL:
 						if(badParam(platform)){
@@ -66,9 +67,8 @@ public class Controller{
 							}
 							field[i * MAX_COORDINATE + positionX] = false;
 						}
-						platforms.add(new Barrier((double)positionX * SIZE_OF_BLOCK, (double)(positionY + 1) * SIZE_OF_BLOCK,
-							(double)positionX * SIZE_OF_BLOCK + SIZE_OF_BLOCK, (double)(positionY + 1) * SIZE_OF_BLOCK - height * SIZE_OF_BLOCK,
-							Platform.Type.VERTICAL));
+						platforms.add(new Barrier(positionX, positionY + 1, positionX + 1, positionY + 1 - height,
+								Platform.Type.VERTICAL));
 						rectangles.add(createRectangle(height * SIZE_OF_BLOCK, SIZE_OF_BLOCK, positionX * SIZE_OF_BLOCK,
 								(double)(MAX_COORDINATE - 1 - positionY) * SIZE_OF_BLOCK, Color.AZURE));
 						break;
@@ -86,8 +86,7 @@ public class Controller{
 							}
 							field[i * MAX_COORDINATE + positionX] = true;
 						}
-						platforms.add(new Barrier((double)positionX * SIZE_OF_BLOCK, (double)(positionY + 1) * SIZE_OF_BLOCK,
-							(double)positionX * SIZE_OF_BLOCK + width * SIZE_OF_BLOCK, (double)(positionY) * SIZE_OF_BLOCK,
+						platforms.add(new Barrier(positionX, positionY + 1, positionX + width, positionY,
 							Platform.Type.HORIZONTAL));
 						rectangles.add(createRectangle(SIZE_OF_BLOCK, width * SIZE_OF_BLOCK, (double)positionX * SIZE_OF_BLOCK,
 								(double)(MAX_COORDINATE - 1 - positionY) * SIZE_OF_BLOCK, Color.AZURE));
@@ -136,20 +135,62 @@ public class Controller{
 			Character.digit(platform.charAt(3), Character.MAX_RADIX) > MAX_COORDINATE - 1;
 	}
 
-	public int move(double oldX, double oldY, double newX, double newY){
-		List<Platform> platforms = model.getPlatforms();
+	private int getModelCoord(double viewCoord){
+		int modelCoord = 0;
+		while(!(modelCoord * SIZE_OF_BLOCK - viewCoord <= SIZE_OF_BLOCK / 2 && viewCoord - modelCoord * SIZE_OF_BLOCK <= SIZE_OF_BLOCK / 2) 
+				&& modelCoord <= MAX_COORDINATE){
+			++modelCoord;
+		}
+		return modelCoord;
+	}
+
+	public double getViewCoord(double viewCoord){
+		return getModelCoord(viewCoord) * SIZE_OF_BLOCK;
+	}
+
+	private int getIndex(List<Platform> platforms, int oldX, int oldY){
 		int index;
 		for(index = 0; index < platforms.size(); ++index){
 			//System.out.println(index + " " + oldX + " " + (SIZE_OF_FIELD - oldY) + " " + platforms.get(index).getLeftTopX() + " " + platforms.get(index).getLeftTopY());
 			if(platforms.get(index).getLeftTopX() == oldX &&  
-				platforms.get(index).getLeftTopY() == SIZE_OF_FIELD - oldY){
+				platforms.get(index).getLeftTopY() == oldY){
 				break;
 			}
 		}
+		return index;
+	}
+
+	public int move(double oldX, double oldY, double newX, double newY){
+		int oldModelX = getModelCoord(oldX);
+		int oldModelY = MAX_COORDINATE - getModelCoord(oldY);
+		int newModelX = getModelCoord(newX);
+		int newModelY = MAX_COORDINATE - getModelCoord(newY);
+		List<Platform> platforms = model.getPlatforms();
+		int index = getIndex(platforms, oldModelX, oldModelY);
 		if(index > platforms.size()){
 			return IS_FINISH;
 		}
-		return model.move(index, newX - oldX, oldY - newY);
+		boolean canMove = true;
+		if(platforms.get(index).getType() == Platform.Type.VERTICAL && oldModelY == newModelY && 
+					Math.abs(oldY - SIZE_OF_BLOCK * (MAX_COORDINATE - oldModelY)) < Math.abs(oldY - newY)){
+			if(oldY < newY){
+				canMove = model.checkMove(index, 0, -1);
+			} else {
+				canMove = model.checkMove(index, 0, 1);
+			}
+		}
+		if(platforms.get(index).getType() == Platform.Type.HORIZONTAL && oldModelX == newModelX 
+					&& Math.abs(oldX - SIZE_OF_BLOCK * oldModelX) < Math.abs(oldX - newX)){
+			if(oldX < newX){
+				canMove = model.checkMove(index, 1, 0);
+			} else {
+				canMove = model.checkMove(index, -1, 0);
+			}
+		}
+		if(!canMove){
+			return CANT_MOVE;
+		}
+		return model.move(index, newModelX - oldModelX, newModelY - oldModelY);
 	}
 
 	private double SIZE_OF_FIELD = 600;
@@ -160,15 +201,15 @@ public class Controller{
 	/**
 	 * Height of Mouse.
 	*/
-	private double MOUSE_HEIGHT = 100;
+	private int MOUSE_HEIGHT = 1;
 	/**
 	 * Width of Mouse.
 	*/	
-	private double MOUSE_WIDTH = 200;
+	private int MOUSE_WIDTH = 2;
 	/**
 	 * Y coordinate of left top corner of Mouse in Model.
 	*/	
-	private double MOUSE_Y_COORDINATE_MODEL = 400;
+	private int MOUSE_Y_COORDINATE_MODEL = 4;
 	/**
 	 * Y coordinate of left top corner of Mouse in View.
 	*/	
@@ -217,6 +258,7 @@ public class Controller{
 	 * Model of game.
 	*/
 	private Model model = null;
+	private double MIN = 2;
 	private int CAN_MOVE = 0;
 	private int CANT_MOVE = 1;
 	private int IS_FINISH = 2;	

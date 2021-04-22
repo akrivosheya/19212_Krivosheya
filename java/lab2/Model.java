@@ -3,18 +3,26 @@ import java.util.List;
 
 public class Model {
 	public Model(List<Platform> initPlatforms){
+		
 		platforms = initPlatforms;
-		field = new Field(0, 600, 600, 0, platforms);//default, change
+		field = new Field(0, 6, 6, 0, platforms);
 	}
 
-	public int move(int index, double coordX, double coordY){
+	public boolean checkMove(int index, int coordX, int coordY){
 		for(Platform platform : platforms){
 			if(platforms.get(index) == platform){
 				continue;
 			}
 			if(!field.checkMove(index, coordX, coordY, platforms)){
-				return CANT_MOVE;
+				return false;
 			}
+		}
+		return true;
+	}
+
+	public int move(int index, int coordX, int coordY){
+		if(!checkMove(index, coordX, coordY)){
+			return CANT_MOVE;
 		}
 		int type;
 		if(platforms.get(index).getType() == Platform.Type.HORIZONTAL){

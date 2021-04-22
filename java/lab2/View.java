@@ -31,7 +31,6 @@ public class View extends Application {
         primaryStage.setScene(scene);
 	primaryStage.setTitle("Let's play a game");
 
-
 	rectangles = contr.getRectangles("file.txt");
 	if(rectangles == null){
         	primaryStage.show();
@@ -55,10 +54,8 @@ public class View extends Application {
 				double y = event.getSceneY() - (oldY - rectangle.getY());
 				int res = 0;
 				try{
-					if((res = contr.move(rectangle.getX(), rectangle.getY(),
-					x, y)) == CANT_MOVE){
-					return;
-				}
+					res = contr.move(rectangle.getX(), rectangle.getY(),
+							x, y);
 				}catch(Exception e){
 					System.out.println("bad");//Change
 				}
@@ -67,14 +64,23 @@ public class View extends Application {
 				}
 				if(res == MOVE_HORIZONTAL){
                 			rectangle.setX(x);
-				}else{
+				} else if (res == MOVE_VERTICAL){
                 			rectangle.setY(y);
 				}
 				oldX = event.getSceneX();
 				oldY = event.getSceneY();
             			}
+
         		});
-			root.getChildren().add(rectangle);
+		rectangle.setOnMouseReleased(new EventHandler<MouseEvent>() {
+ 
+            		@Override
+            		public void handle(MouseEvent event) {
+				rectangle.setX(contr.getViewCoord(rectangle.getX()));
+				rectangle.setY(contr.getViewCoord(rectangle.getY()));
+            		}
+        		});
+		root.getChildren().add(rectangle);
 	}
 		
 

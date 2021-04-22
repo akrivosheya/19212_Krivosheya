@@ -37,28 +37,28 @@ public class Field {
 		}*/
 	}
 
-	public boolean checkMove(int index, double coordX, double coordY, List<Platform> platforms){
+	public boolean checkMove(int index, int coordX, int coordY, List<Platform> platforms){
 		Platform.Type typeOfPlatform = platforms.get(index).getType();
 		for(int i = 0; i < platforms.size(); ++i){
 			if(tabOfDependence.get(index * platforms.size() + i)){
 				if(typeOfPlatform == Platform.Type.VERTICAL){
 					if(coordY > 0 && (platforms.get(i).conflictsUp(platforms.get(index)) ||
- 						leftTopCornerY - platforms.get(index).getLeftTopY() < MIN)){
+ 						leftTopCornerY == platforms.get(index).getLeftTopY())){
 						return false;
 					}
 					if(coordY < 0 && (platforms.get(i).conflictsDown(platforms.get(index)) ||
-						platforms.get(index).getRightBottomY() - rightBottomCornerY < MIN)){
+						platforms.get(index).getRightBottomY() == rightBottomCornerY)){
 						return false;
 					}
 				}
 				if(typeOfPlatform == Platform.Type.HORIZONTAL){
 					if(coordX > 0 && (platforms.get(i).conflictsRight(platforms.get(index)) ||
-						(rightBottomCornerX - platforms.get(index).getRightBottomX() < MIN &&
+						(rightBottomCornerX == platforms.get(index).getRightBottomX() &&
 						!platforms.get(index).isMouse()))){
 						return false;
 					}
 					if(coordX < 0 && (platforms.get(i).conflictsLeft(platforms.get(index)) ||
-						platforms.get(index).getLeftTopX() - leftTopCornerX < MIN)){
+						platforms.get(index).getLeftTopX() == leftTopCornerX)){
 						return false;
 					}
 				}
@@ -68,7 +68,7 @@ public class Field {
 	}
 
 	public boolean isFinish(Platform platform){
-		return platform.getRightBottomX() >= rightBottomCornerX && platform.isMouse();
+		return platform.getRightBottomX() == rightBottomCornerX && platform.isMouse();
 	}
 
 	private int leftTopCornerX;
@@ -76,5 +76,4 @@ public class Field {
 	private int rightBottomCornerX;
 	private int rightBottomCornerY;
 	private List<Boolean> tabOfDependence;
-	private int MIN = 2;
 }
