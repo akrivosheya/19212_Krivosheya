@@ -1,3 +1,7 @@
+/** Interface of platforms
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
 public interface Platform {
 	public boolean isMouse();
 	public void move(int coordX, int coordY);

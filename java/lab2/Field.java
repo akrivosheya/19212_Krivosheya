@@ -1,7 +1,19 @@
 import java.util.ArrayList;
 import java.util.List;
 
+/** Class that contains information about field of current level.
+ * @author Alexandr Krivosheya
+ * @version 1.0
+*/
 public class Field {
+	/** 
+	 * Constructs Field.
+	 * @param initLeftTopX - x coordinate of left top corner of field.
+	 * @param initLeftTopY - y coordinate of left top corner of field.
+	 * @param initRightBotX - x coordinate of rigth bottom corner of field.
+	 * @param initRigthBotY - y coordinate of right bottom corner of field.
+	 * @param platforms - list of platforms of current level.
+	*/
 	public Field(int initLeftTopX, int initLeftTopY, int initRightBotX,
 		int initRightBotY, List<Platform> platforms){
 		leftTopCornerX = initLeftTopX;
@@ -29,14 +41,16 @@ public class Field {
 				}
 			}
 		}
-		/*for(int i = 0; i < platforms.size(); ++i){
-			for(int j = 0; j < platforms.size(); ++j){
-				System.out.print(tabOfDependence.get(i * platforms.size() + j) + " ");
-			}
-			System.out.println();
-		}*/
 	}
 
+	/** 
+	 * Check if moving is possible.
+	 * @param index - index of current platform.
+	 * @param coordX - moving in x coordinate.
+	 * @param coordY - moving in y coordinate.
+	 * @param platforms - list of platforms of current level.
+	 * @return Returns true if moving is possible and false else.
+	*/
 	public boolean checkMove(int index, int coordX, int coordY, List<Platform> platforms){
 		Platform.Type typeOfPlatform = platforms.get(index).getType();
 		for(int i = 0; i < platforms.size(); ++i){
@@ -53,8 +67,7 @@ public class Field {
 				}
 				if(typeOfPlatform == Platform.Type.HORIZONTAL){
 					if(coordX > 0 && (platforms.get(i).conflictsRight(platforms.get(index)) ||
-						(rightBottomCornerX == platforms.get(index).getRightBottomX() &&
-						!platforms.get(index).isMouse()))){
+						(rightBottomCornerX == platforms.get(index).getRightBottomX()))){
 						return false;
 					}
 					if(coordX < 0 && (platforms.get(i).conflictsLeft(platforms.get(index)) ||
@@ -67,13 +80,33 @@ public class Field {
 		return true;
 	}
 
+	/** 
+	 * Checks if level is finished.
+	 * @param platform - last moved platform.
+	 * @return Returns true if level is finished and false else.
+	*/
 	public boolean isFinish(Platform platform){
 		return platform.getRightBottomX() == rightBottomCornerX && platform.isMouse();
 	}
 
+	/** 
+	 * X coordinate of left top corner.
+	*/
 	private int leftTopCornerX;
+	/** 
+	 * Y coordinate of left top corner.
+	*/
 	private int leftTopCornerY;
+	/** 
+	 * X coordinate of right bottom corner.
+	*/
 	private int rightBottomCornerX;
+	/** 
+	 * Y coordinate of right bottom corner.
+	*/
 	private int rightBottomCornerY;
+	/** 
+	 * Tab with information which platform conflicts with another platform.
+	*/
 	private List<Boolean> tabOfDependence;
 }

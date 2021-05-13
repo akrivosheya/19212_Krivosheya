@@ -22,84 +22,22 @@ public class Controller{
 	 * @return Returns List of Rectangles. If unsuccessfully, returns null.
 	*/
 	public List<Rectangle> getRectangles(String file){
-			List<Rectangle> rectangles = new ArrayList<Rectangle>();
-			List<Platform> platforms = new ArrayList<Platform>();
-			boolean field[] = new boolean[MAX_COORDINATE * MAX_COORDINATE];
-		try(Scanner scan = new Scanner(new File(file))){
-			if(!(scan.hasNext() && ("Level").compareTo(scan.next()) == 0 && scan.hasNext())){
-				return null;
+		List<Platform> platforms;
+		List<Rectangle> rectangles = null;
+		model.loadLevel(file);
+		platforms = model.getPlatforms();
+		if(platforms != null){
+			rectangles = new ArrayList<>();
+			Color color;
+			for(Platform platform : platforms){
+				color = (platform.isMouse()) ? Color.GOLD : Color.AZURE;
+				rectangles.add(createRectangle(platform.getHeight() * SIZE_OF_BLOCK, 
+						platform.getWidth() * SIZE_OF_BLOCK, 
+						platform.getLeftTopX() * SIZE_OF_BLOCK, 
+						(double)(MAX_COORDINATE - platform.getLeftTopY()) * SIZE_OF_BLOCK,
+						color));
 			}
-			level = scan.next();
-			String platform;
-			while(scan.hasNext()){
-				platform = scan.next();
-				switch(platform.charAt(0)){//проверить на другие конфликты
-					case MOUSE:
-						if(platform.length() != MOUSE_LENGTH ||
-							Character.digit(platform.charAt(1), Character.MAX_RADIX) >= MAX_COORDINATE - 1 ||
-							hasMouse){
-							return null;
-						}
-						int position = Character.digit(platform.charAt(1), Character.MAX_RADIX);
-						for(int i = 0; i < MOUSE_LENGTH_IN_FIELD; ++i){
-							if(field[MOUSE_Y_IN_FIELD * MAX_COORDINATE + position + i]){
-								return null;
-							}
-							field[MOUSE_Y_IN_FIELD * MAX_COORDINATE + position + i] = false;
-						}
-						hasMouse = true;
-						platforms.add(new Mouse(position, MOUSE_Y_COORDINATE_MODEL,
-							position + MOUSE_WIDTH, MOUSE_Y_COORDINATE_MODEL - MOUSE_HEIGHT));
-						rectangles.add(createRectangle(MOUSE_HEIGHT * SIZE_OF_BLOCK, MOUSE_WIDTH * SIZE_OF_BLOCK, 
-								(double)position * SIZE_OF_BLOCK, MOUSE_Y_COORDINATE_VIEW, Color.GOLD));
-						break;
-					case VERTICAL:
-						if(badParam(platform)){
-							return null;
-						}
-						int positionX = Character.digit(platform.charAt(1), Character.MAX_RADIX);
-						int positionY = Character.digit(platform.charAt(2), Character.MAX_RADIX);
-						int height = Character.digit(platform.charAt(3), Character.MAX_RADIX);
-						for(int i = MAX_COORDINATE - 1 - positionY; i < height + MAX_COORDINATE - 1 - positionY; ++i){
-							if(field[i * MAX_COORDINATE + positionX]
-								|| positionY < height - 1){
-								return null;
-							}
-							field[i * MAX_COORDINATE + positionX] = false;
-						}
-						platforms.add(new Barrier(positionX, positionY + 1, positionX + 1, positionY + 1 - height,
-								Platform.Type.VERTICAL));
-						rectangles.add(createRectangle(height * SIZE_OF_BLOCK, SIZE_OF_BLOCK, positionX * SIZE_OF_BLOCK,
-								(double)(MAX_COORDINATE - 1 - positionY) * SIZE_OF_BLOCK, Color.AZURE));
-						break;
-					case HORIZONTAL:
-						if(badParam(platform)){
-							return null;
-						}
-						positionX = Character.digit(platform.charAt(1), Character.MAX_RADIX);
-						positionY = Character.digit(platform.charAt(2), Character.MAX_RADIX);
-						int width = Character.digit(platform.charAt(3), Character.MAX_RADIX);
-						for(int i = positionX; i < width + positionX; ++i){
-							if(field[(MAX_COORDINATE - 1 - positionY) * MAX_COORDINATE + i] ||
-								positionX > MAX_COORDINATE - width){
-								return null;
-							}
-							field[i * MAX_COORDINATE + positionX] = true;
-						}
-						platforms.add(new Barrier(positionX, positionY + 1, positionX + width, positionY,
-							Platform.Type.HORIZONTAL));
-						rectangles.add(createRectangle(SIZE_OF_BLOCK, width * SIZE_OF_BLOCK, (double)positionX * SIZE_OF_BLOCK,
-								(double)(MAX_COORDINATE - 1 - positionY) * SIZE_OF_BLOCK, Color.AZURE));
-						break;
-				}
-			}
-		} catch (IOException error){
-			return null;
 		}
-		if(!hasMouse){
-			return null;
-		}
-		model = new Model(platforms);
 		return rectangles;
 	}
 
@@ -135,23 +73,40 @@ public class Controller{
 			Character.digit(platform.charAt(3), Character.MAX_RADIX) > MAX_COORDINATE - 1;
 	}
 
+	/**
+	 * Transforms view coordinatess to model coordinates.
+	 * @param viewCoord - view coordinate.
+	 * @return Returns model coordinate.
+	*/
 	private int getModelCoord(double viewCoord){
 		int modelCoord = 0;
-		while(!(modelCoord * SIZE_OF_BLOCK - viewCoord <= SIZE_OF_BLOCK / 2 && viewCoord - modelCoord * SIZE_OF_BLOCK <= SIZE_OF_BLOCK / 2) 
+		while(!(modelCoord * SIZE_OF_BLOCK - viewCoord <= SIZE_OF_BLOCK / 2 &&
+				viewCoord - modelCoord * SIZE_OF_BLOCK <= SIZE_OF_BLOCK / 2) 
 				&& modelCoord <= MAX_COORDINATE){
 			++modelCoord;
 		}
 		return modelCoord;
 	}
 
+	/**
+	 * Transforms view coordinates to fixed view coordintes.
+	 * @param viewCoord - view coordinate.
+	 * @return Returns fixed view coordinate.
+	*/
 	public double getViewCoord(double viewCoord){
 		return getModelCoord(viewCoord) * SIZE_OF_BLOCK;
 	}
 
+	/**
+	 * Takes index of platform in list of platforms of current level with given coordinates.
+	 * @param platforms - list of platforms of current level.
+	 * @param oldX - x coordinate of current platform in View.
+	 * @param oldY - y coordinate of current platform in View.
+	 * @return Returns index of current platform.
+	*/
 	private int getIndex(List<Platform> platforms, int oldX, int oldY){
 		int index;
 		for(index = 0; index < platforms.size(); ++index){
-			//System.out.println(index + " " + oldX + " " + (SIZE_OF_FIELD - oldY) + " " + platforms.get(index).getLeftTopX() + " " + platforms.get(index).getLeftTopY());
 			if(platforms.get(index).getLeftTopX() == oldX &&  
 				platforms.get(index).getLeftTopY() == oldY){
 				break;
@@ -160,6 +115,16 @@ public class Controller{
 		return index;
 	}
 
+	/**
+	 * Moves platform in model, if moving is possible, and doesn't do it else.
+	 * @param oldX - x coordinate of current platform in View.
+	 * @param oldY - y coordinate of current platform in View.
+	 * @param newX - new x coordinate of current platform in View.
+	 * @param newY - new y coordinate of current platform in View.
+	 * @return Returns CANT_MOVE if it is impossible to move platform,
+	 * MOVE_HORIZONTAL if moving is possible and platform is horizontal
+	 * MOVE_VERTICAL if moving is possible and platform is vertical.
+	*/
 	public int move(double oldX, double oldY, double newX, double newY){
 		int oldModelX = getModelCoord(oldX);
 		int oldModelY = MAX_COORDINATE - getModelCoord(oldY);
@@ -168,7 +133,7 @@ public class Controller{
 		List<Platform> platforms = model.getPlatforms();
 		int index = getIndex(platforms, oldModelX, oldModelY);
 		if(index > platforms.size()){
-			return IS_FINISH;
+			return CANT_MOVE;
 		}
 		boolean canMove = true;
 		if(platforms.get(index).getType() == Platform.Type.VERTICAL && oldModelY == newModelY && 
@@ -192,74 +157,137 @@ public class Controller{
 		}
 		return model.move(index, newModelX - oldModelX, newModelY - oldModelY);
 	}
+	
+	/**
+	 * @return Returns list of names of levels in model.
+	*/
+	public List<String> getLevelsNames(){
+		return model.getLevelsNames();
+	}
 
-	private double SIZE_OF_FIELD = 600;
+	/**
+	 * Checkes if level in model is finished.
+	 * @return Returns true if level is finished and false else.
+	*/
+	public boolean isFinished(){
+		return model.isFinished();
+	}
+
+	/**
+	 * @return Returns number of current level in model.
+	*/
+	public String getLevel(){
+		return model.getLevel();
+	}
+
+	/**
+	 * Increases count of steps in model.
+	*/
+	public void increaseSteps(){
+		model.increaseSteps();
+	}
+
+	/**
+	 * @return Returns current count of steps in model.
+	*/
+	public int getSteps(){
+		return model.getSteps();
+	}
+	
+	/**
+	 * Increases time in model.
+	*/
+	public void increaseTime(){
+		model.increaseTime();
+	}
+
+	/**
+	 * @return Returns text of time of current level in model.
+	*/
+	public String getTime(){
+		return model.getTime();
+	}
+	
+	/**
+	 * @param mode - flag that chooses requiring information.
+	 * @return Returns list of strings of information in model.
+	*/
+	public List<String> getInfoText(Mode mode){
+		return model.getInfoText(mode);
+	}
+	
+	/**
+	 * @return Returns best time in model or "--:--" if level is uncompleted.
+	*/
+	public String getBest(){
+		return model.getBest();
+	}
+	
+	/**
+	 * Resets score tab in model.
+	*/
+	public void reset(){
+		model.reset();
+	}
+	
+	/**
+	 * Checkes if player gets new record in level of model.
+	 * @return Returns true if player gets new record and false else.
+	*/
+	public boolean isRecord(){
+		return model.isRecord();
+	}
+	
+	/**
+	 * Saves new best time of level in model.
+	 * @param name - name of player who  gets new record.
+	*/
+	public void saveResult(String name){
+		StringBuilder rightName = new StringBuilder(name.replace(' ', '_'));
+		if(rightName.length() > MAX_NAME_LENGTH){
+			rightName.delete(MAX_NAME_LENGTH, rightName.length());
+		}
+		if(rightName.length() < 1){
+			rightName.append("NO_NAME");
+		}
+		rightName.append(" ");
+		model.saveResult(rightName.toString());
+	}
+	
+	/**.
+	 * @return Returns file name of current level.
+	*/
+	public String getCurrentLevel(){
+		return model.getCurrentLevel();
+	}
+
 	/**
 	 * Size of 1 block.
 	*/
 	private double SIZE_OF_BLOCK = 100;
 	/**
-	 * Height of Mouse.
-	*/
-	private int MOUSE_HEIGHT = 1;
-	/**
-	 * Width of Mouse.
+	 * Max count of blocks of field.
 	*/	
-	private int MOUSE_WIDTH = 2;
-	/**
-	 * Y coordinate of left top corner of Mouse in Model.
-	*/	
-	private int MOUSE_Y_COORDINATE_MODEL = 4;
-	/**
-	 * Y coordinate of left top corner of Mouse in View.
-	*/	
-	private double MOUSE_Y_COORDINATE_VIEW = 200;
-	/**
-	 * Mouse's y position in field.
-	*/	
-	private int MOUSE_Y_IN_FIELD = 1;
-	/**
-	 * Length of Mouse's in field.
-	*/	
-	private int MOUSE_LENGTH_IN_FIELD = 2;
-	/**
-	 * Length of Mouse's param.
-	*/	
-	private int MOUSE_LENGTH = 2;
+	private int MAX_COORDINATE = 6;
 	/**
 	 * Length of Barrier's param.
 	*/	
 	private int BARRIER_LENGTH = 4;
 	/**
-	 * Max count of blocks of field.
-	*/	
-	private int MAX_COORDINATE = 6;
-	/**
-	 * Character of Mouse.
-	*/	
-	private final char MOUSE = 'm';
-	/**
-	 * Character of vertical Barrier.
-	*/	
-	private final char VERTICAL = 'v';
-	/**
-	 * Character of horizontal Barrier.
-	*/	
-	private final char HORIZONTAL = 'h';
-	/**
-	 * Flag of having Mouse in Model.
-	*/	
-	private boolean hasMouse = false;
-	/**
-	 * Identifier of level.
-	*/	
-	private String level;
-	/**
 	 * Model of game.
 	*/
-	private Model model = null;
-	private double MIN = 2;
-	private int CAN_MOVE = 0;
-	private int CANT_MOVE = 1;
-	private int IS_FINISH = 2;	
+	private Model model = new Model();
+	/**
+	 * Flag of impossible moving.
+	*/
+	private int CANT_MOVE = 1;	
+	/**
+	 * Max length of player name.
+	*/
+	private int MAX_NAME_LENGTH = 10;
+	/**
+	 * All possible modes of information: TAB - tab of scores, ABOUT - information about game,
+	 * HELP - help information.
+	*/
+	public enum Mode{TAB, ABOUT, HELP};
 }
