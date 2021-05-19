@@ -81,7 +81,7 @@ public class Information extends Application{
 	/**
 	 * Window width.
 	*/
-	private double SCENE_WIDTH = 300;
+	private double SCENE_WIDTH = 400;
 	/**
 	 * Y position of first token in information.
 	*/

@@ -30,7 +30,7 @@ public class Field {
 				else if(typeOfPlatform != platforms.get(j).getType()){
 					tabOfDependence.add(i * platforms.size() + j, true);
 				}
-				else if((typeOfPlatform == Platform.Type.HORIZONTAL && 
+				else if((typeOfPlatform == Platform.Type.VERTICAL && 
 						platforms.get(i).getLeftTopX() == platforms.get(j).getLeftTopX()) ||
 						(typeOfPlatform == Platform.Type.HORIZONTAL && 
 						platforms.get(i).getLeftTopY() == platforms.get(j).getLeftTopY())){
@@ -56,24 +56,37 @@ public class Field {
 		for(int i = 0; i < platforms.size(); ++i){
 			if(tabOfDependence.get(index * platforms.size() + i)){
 				if(typeOfPlatform == Platform.Type.VERTICAL){
-					if(coordY > 0 && (platforms.get(i).conflictsUp(platforms.get(index)) ||
- 						leftTopCornerY == platforms.get(index).getLeftTopY())){
+					if(coordY > 0 && platforms.get(i).conflictsUp(platforms.get(index))){
 						return false;
 					}
-					if(coordY < 0 && (platforms.get(i).conflictsDown(platforms.get(index)) ||
-						platforms.get(index).getRightBottomY() == rightBottomCornerY)){
+					if(coordY < 0 && platforms.get(i).conflictsDown(platforms.get(index))){
 						return false;
 					}
 				}
 				if(typeOfPlatform == Platform.Type.HORIZONTAL){
-					if(coordX > 0 && (platforms.get(i).conflictsRight(platforms.get(index)) ||
-						(rightBottomCornerX == platforms.get(index).getRightBottomX()))){
+					if(coordX > 0 && platforms.get(i).conflictsRight(platforms.get(index))){
 						return false;
 					}
-					if(coordX < 0 && (platforms.get(i).conflictsLeft(platforms.get(index)) ||
-						platforms.get(index).getLeftTopX() == leftTopCornerX)){
+					if(coordX < 0 && platforms.get(i).conflictsLeft(platforms.get(index))){
 						return false;
 					}
+				}
+			}
+			if(typeOfPlatform == Platform.Type.VERTICAL){
+				if(coordY > 0 && leftTopCornerY == platforms.get(index).getLeftTopY()){
+					return false;
+				}
+				if(coordY < 0 && (platforms.get(i).conflictsDown(platforms.get(index)) ||
+					platforms.get(index).getRightBottomY() == rightBottomCornerY)){
+					return false;
+				}
+			}
+			if(typeOfPlatform == Platform.Type.HORIZONTAL){
+				if(coordX > 0 && rightBottomCornerX == platforms.get(index).getRightBottomX()){
+					return false;
+				}
+				if(coordX < 0 && platforms.get(index).getLeftTopX() == leftTopCornerX){
+					return false;
 				}
 			}
 		}

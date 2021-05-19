@@ -35,20 +35,25 @@ public class View extends Application {
         Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT + MENU_HEIGHT, Color.GREY);
 		game = new Group();
 		mainMenu = new Group();
+		levelsInfo = new Group();
 		menuBar = createMenuBar();
 		Rectangle menuLine = new Rectangle(SCENE_WIDTH, MENU_HEIGHT, Color.WHITE);
 		root.getChildren().add(menuLine);
 		root.getChildren().add(menuBar);
 		root.getChildren().add(game);
 		root.getChildren().add(mainMenu);
+		root.getChildren().add(levelsInfo);
         primaryStage.setScene(scene);
 		primaryStage.setTitle("Let's play a game");
-		
 		levels = createLevels();
 		for(Button level : levels){
 			mainMenu.getChildren().add(level);
 		}
-		
+		Rectangle info = new Rectangle(INFO_WIDTH, SCENE_HEIGHT + MENU_HEIGHT, Color.YELLOW);
+		info.setX(SCENE_WIDTH - INFO_WIDTH);
+		info.setY(0);
+		mainMenu.getChildren().add(info);
+		setLevelsText(levelsInfo);
 		primaryStage.show();
     }
 
@@ -60,13 +65,13 @@ public class View extends Application {
 		StringBuilder stringLevel = new StringBuilder("Level ");
 		String stringStepsValue = new String(String.valueOf(contr.getSteps()));
 		stringLevel.append(contr.getLevel());
-		Text level = new Text(650, 50, stringLevel.toString());
-		Text steps = new Text(650, 100, "Steps");
-		stepsValue = new Text(650, 150, String.valueOf(contr.getSteps()));
-		Text time = new Text(650, 200, "Time");
-		timeValue = new Text(650, 250, "00:00");
-		Text best = new Text(650, 300, "Best time");
-		Text bestValue = new Text(650, 350, contr.getBest());
+		Text level = new Text(TEXT_POSITION_X, 50, stringLevel.toString());
+		Text steps = new Text(TEXT_POSITION_X, 100, "Steps");
+		stepsValue = new Text(TEXT_POSITION_X, 150, String.valueOf(contr.getSteps()));
+		Text time = new Text(TEXT_POSITION_X, 200, "Time");
+		timeValue = new Text(TEXT_POSITION_X, 250, "00:00");
+		Text best = new Text(TEXT_POSITION_X, 300, "Best time");
+		Text bestValue = new Text(TEXT_POSITION_X, 350, contr.getBest());
 		level.setFont(Font.font("Tahoma", FontWeight.NORMAL, 30));
 		steps.setFont(Font.font("Tahoma", FontWeight.NORMAL, 30));
 		time.setFont(Font.font("Tahoma", FontWeight.NORMAL, 30));
@@ -81,6 +86,21 @@ public class View extends Application {
 		game.getChildren().add(timeValue);
 		game.getChildren().add(best);
 		game.getChildren().add(bestValue);
+	}
+	
+	/**
+	 * Creates information about all levels.
+	 * @param mainMenu - group that contains attributes main menu.
+	*/
+	private void setLevelsText(Group levelsInfo){
+		levelsInfo.getChildren().clear();
+		List<String> text = new ArrayList<String>();
+		text = contr.getLevelsInfo();
+		for(int i = 0; i < text.size(); ++i){
+			Text line = new Text(TEXT_POSITION_X, i * SCENE_HEIGHT / text.size() + MENU_HEIGHT, text.get(i));
+			line.setFont(Font.font("Tahoma", FontWeight.NORMAL, 20));
+			levelsInfo.getChildren().add(line);
+		}
 	}
 	
 	/**
@@ -130,6 +150,7 @@ public class View extends Application {
 								});
 		reset.setOnAction(e -> {Stage window = new Stage();
 								confirm(window, "Are you sure you want to reset scores?", t -> {contr.reset();
+																					setLevelsText(levelsInfo);
 																					window.close();});});
 		restart.setOnAction(e -> {Stage window = new Stage();
 								confirm(window, "Are you sure you want to restart?", t -> {loadLevel(contr.getCurrentLevel());
@@ -171,8 +192,8 @@ public class View extends Application {
 			Button level = new Button(name);
 			level.setOnAction(e -> loadLevel(name + ".txt"));
 			level.setFont(Font.font("Tahoma", FontWeight.NORMAL, 30));
-			level.setTranslateX((double)(i % COLUMS * DISTANCE));
-			level.setTranslateY((double)(i / COLUMS * DISTANCE + MENU_HEIGHT));
+			level.setTranslateX((double)(i % COLUMS * (DISTANCE + DISTANCE / 2)));
+			level.setTranslateY((double)(i / COLUMS * DISTANCE / 1.7 + MENU_HEIGHT * 2));
 			levels.add(level);
 			++i;
 		}
@@ -194,6 +215,7 @@ public class View extends Application {
 			return;
 		}	
 		mainMenu.setVisible(false);
+		levelsInfo.setVisible(false);
 		game.setVisible(true);
 		gameMenu.getItems().remove(1);
 		gameMenu.getItems().add(1, restart);
@@ -210,6 +232,25 @@ public class View extends Application {
 			rectangle.setOnMouseDragged(new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
+					if(isShifted){
+						if(typeOfPlatform == MOVE_HORIZONTAL){
+							if((shiftedX < oldX && oldX < event.getSceneX()) ||
+								(shiftedX > oldX && oldX > event.getSceneX())){
+									isShifted = false;
+							}
+							else{
+								return;
+							}
+						} else {
+							if((shiftedY < oldY && oldY < event.getSceneY()) ||
+								(shiftedY > oldY && oldY > event.getSceneY())){
+									isShifted = false;
+							}
+							else{
+								return;
+							}
+						}
+					}
 					double x = event.getSceneX() - (oldX - rectangle.getX());
 					double y = event.getSceneY() - (oldY - rectangle.getY()) - MENU_HEIGHT;
 					int res = 0;
@@ -221,8 +262,16 @@ public class View extends Application {
 					}
 					if(res == MOVE_HORIZONTAL){
 								rectangle.setX(x);
+								typeOfPlatform = res;
 					} else if (res == MOVE_VERTICAL){
 								rectangle.setY(y + MENU_HEIGHT);
+								typeOfPlatform = res;
+					}
+					else{
+						isShifted = true;
+						shiftedX = event.getSceneX();
+						shiftedY = event.getSceneY();
+						return;
 					}
 					oldX = event.getSceneX();
 					oldY = event.getSceneY();
@@ -232,6 +281,7 @@ public class View extends Application {
 			rectangle.setOnMouseReleased(new EventHandler<MouseEvent>() {
 				@Override
 				public void handle(MouseEvent event) {
+					isShifted = false;
 					if(contr.isFinished()){
 						game.setVisible(false);
 						gameMenu.getItems().remove(1);
@@ -241,6 +291,7 @@ public class View extends Application {
 						}
 						gameMenu.getItems().add(1, reset);
 						mainMenu.setVisible(true);
+						levelsInfo.setVisible(true);
 						return;
 					}
 					contr.increaseSteps();
@@ -280,6 +331,7 @@ public class View extends Application {
 		Button ok = new Button("OK");
 		Button cancel = new Button("CANCEL");
 		ok.setOnAction(e -> {contr.saveResult(name.getText());
+							setLevelsText(levelsInfo);
 							window.close();});
 		cancel.setOnAction(e -> window.close());
 		ok.setFont(Font.font("Tahoma", FontWeight.NORMAL, 15));
@@ -312,6 +364,18 @@ public class View extends Application {
 	*/
 	private double oldY;
 	/**
+	 * X position of shifted cursor when some platform is pushed or dragged.
+	*/
+	private double shiftedX;
+	/**
+	 * Y position of shifted cursor when some platform is pushed or dragged.
+	*/
+	private double shiftedY;
+	/**
+	 * Y position of shifted cursor when some platform is pushed or dragged.
+	*/
+	private int typeOfPlatform;
+	/**
 	 * Controller that connects View and Model.
 	*/
 	private Controller contr = new Controller();
@@ -338,7 +402,7 @@ public class View extends Application {
 	/**
 	 * Count of levels in main menu in one row.
 	*/
-	private int COLUMS = 4;
+	private int COLUMS = 2;
 	/**
 	 * Distance between buttons in main menu.
 	*/
@@ -376,9 +440,13 @@ public class View extends Application {
 	*/
 	private double WINDOW_HEIGHT = 200;
 	/**
-	 * Width of confirmation window;
+	 * Width of confirmation window.
 	*/
 	private double WINDOW_WIDTH = 300;
+	/**
+	 * X position of information text.
+	*/
+	private double TEXT_POSITION_X = 600;
 	/**
 	 * Text of made steps in currents level.
 	*/
@@ -408,6 +476,10 @@ public class View extends Application {
 	*/
 	private Group mainMenu = null;
 	/**
+	 * Group for information about all levels.
+	*/
+	private Group levelsInfo = null;
+	/**
 	 * Object for showing information about game.
 	*/
 	private Information infoWindow = null;
@@ -418,13 +490,17 @@ public class View extends Application {
 	/**
 	 * Button "Reset scores" in menu bar. Is visible in main menu.
 	*/
-	MenuItem reset = null;
+	private MenuItem reset = null;
 	/**
 	 * Button "Restart" in menu bar. Is visible in current level.
 	*/
-	MenuItem restart = null;
+	private MenuItem restart = null;
 	/**
 	 * Menu in menu bar for game's instructions.
 	*/
-	Menu gameMenu = null;
+	private Menu gameMenu = null;
+	/**
+	 * Flag that cursor is shifted.
+	*/
+	private boolean isShifted = false;
 }

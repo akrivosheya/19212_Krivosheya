@@ -179,6 +179,13 @@ public class Controller{
 	public String getLevel(){
 		return model.getLevel();
 	}
+	
+	/**
+	 * @return Returns text about levels.
+	*/
+	public List<String> getLevelsInfo(){
+		return model.getLevelsInfo();
+	}
 
 	/**
 	 * Increases count of steps in model.

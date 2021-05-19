@@ -48,8 +48,9 @@ public class Model {
 							field[MOUSE_Y_IN_FIELD * MAX_COORDINATE + position + i] = true;
 						}
 						hasMouse = true;
-						platforms.add(new Mouse(position, MOUSE_Y_COORDINATE_MODEL,
-							position + MOUSE_WIDTH, MOUSE_Y_COORDINATE_MODEL - MOUSE_HEIGHT));
+						platforms.add(new Platform(position, MOUSE_Y_COORDINATE_MODEL,
+							position + MOUSE_WIDTH, MOUSE_Y_COORDINATE_MODEL - MOUSE_HEIGHT,
+								Platform.Type.HORIZONTAL, true));
 						break;
 					case VERTICAL:
 						if(badParam(platform)){
@@ -67,8 +68,8 @@ public class Model {
 							}
 							field[i * MAX_COORDINATE + positionX] = true;
 						}
-						platforms.add(new Barrier(positionX, positionY + 1, positionX + 1, positionY + 1 - height,
-								Platform.Type.VERTICAL));
+						platforms.add(new Platform(positionX, positionY + 1, positionX + 1, positionY + 1 - height,
+								Platform.Type.VERTICAL, false));
 						break;
 					case HORIZONTAL:
 						if(badParam(platform)){
@@ -86,8 +87,8 @@ public class Model {
 							}
 							field[(MAX_COORDINATE - 1 - positionY) * MAX_COORDINATE + i] = true;
 						}
-						platforms.add(new Barrier(positionX, positionY + 1, positionX + width, positionY,
-							Platform.Type.HORIZONTAL));
+						platforms.add(new Platform(positionX, positionY + 1, positionX + width, positionY,
+							Platform.Type.HORIZONTAL, false));
 						break;
 				}
 			}
@@ -116,7 +117,7 @@ public class Model {
 		return platform.length() != BARRIER_LENGTH ||
 			Character.digit(platform.charAt(1), Character.MAX_RADIX) > MAX_COORDINATE - 1 ||
 			Character.digit(platform.charAt(2), Character.MAX_RADIX) > MAX_COORDINATE - 1 ||
-			Character.digit(platform.charAt(3), Character.MAX_RADIX) > MAX_COORDINATE - 1;
+			Character.digit(platform.charAt(3), Character.MAX_RADIX) > MAX_COORDINATE;
 	}
 
 	/**
@@ -315,6 +316,29 @@ public class Model {
 		catch(IOException error){
 			return "-";
 		}
+	}
+	
+	/**
+	 * @return Returns information about levels.
+	*/
+	public List<String> getLevelsInfo(){
+		List<String> info = new ArrayList<String>();
+		try(Scanner scan = new Scanner(new File(tabFile))){
+			for(int i = 1; i <= LEVELS; ++i){
+				info.add("Level " + i);
+				if(toInt(scan.next()) == 0){
+					info.add("Uncompleted");
+					scan.next();
+					scan.next();
+				}
+				else{
+					info.add(scan.next() + " - " + scan.next());
+				}
+			}
+			info.add("");
+		}
+		catch(IOException error){}
+		return info;
 	}
 	
 	/**
