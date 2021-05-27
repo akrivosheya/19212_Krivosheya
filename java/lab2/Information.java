@@ -1,5 +1,5 @@
 import javafx.application.Application;
-import javafx.stage.Stage;
+import javafx.stage.*;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.paint.Color;
@@ -62,6 +62,11 @@ public class Information extends Application{
 				y += OFFSET;
 			}
 		}
+		primaryStage.setMaxWidth(SCENE_WIDTH + OUTLINE_WIDTH);
+		primaryStage.setMinWidth(SCENE_WIDTH + OUTLINE_WIDTH);
+		primaryStage.setMaxHeight(SCENE_HEIGHT + TITLE_HEIGHT);
+		primaryStage.setMinHeight(SCENE_HEIGHT + TITLE_HEIGHT);
+		primaryStage.initModality(Modality.APPLICATION_MODAL);
 		
 		currentStage = primaryStage;
 		primaryStage.show();
@@ -82,6 +87,14 @@ public class Information extends Application{
 	 * Window width.
 	*/
 	private double SCENE_WIDTH = 400;
+	/**
+	 * Height of title of window.
+	*/
+	private double TITLE_HEIGHT = 35;
+	/**
+	 * Width of outline.
+	*/
+	private double OUTLINE_WIDTH = 15;
 	/**
 	 * Y position of first token in information.
 	*/

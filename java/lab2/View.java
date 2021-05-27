@@ -3,7 +3,7 @@ import javafx.scene.Scene;
 import javafx.scene.paint.Color;
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.stage.Stage;
+import javafx.stage.*;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.Node;
 import javafx.event.*;
@@ -54,6 +54,10 @@ public class View extends Application {
 		info.setY(0);
 		mainMenu.getChildren().add(info);
 		setLevelsText(levelsInfo);
+		primaryStage.setMaxHeight(SCENE_HEIGHT + MENU_HEIGHT + TITLE_HEIGHT);
+		primaryStage.setMinHeight(SCENE_HEIGHT + MENU_HEIGHT + TITLE_HEIGHT);
+		primaryStage.setMaxWidth(SCENE_WIDTH + OUTLINE_WIDTH);
+		primaryStage.setMinWidth(SCENE_WIDTH + OUTLINE_WIDTH);
 		primaryStage.show();
     }
 
@@ -128,6 +132,11 @@ public class View extends Application {
 		root.getChildren().add(yes);
 		root.getChildren().add(no);
 		root.getChildren().add(text);
+		window.setMaxWidth(WINDOW_WIDTH + OUTLINE_WIDTH);
+		window.setMinWidth(WINDOW_WIDTH + OUTLINE_WIDTH);
+		window.setMaxHeight(WINDOW_HEIGHT + TITLE_HEIGHT);
+		window.setMinHeight(WINDOW_HEIGHT + TITLE_HEIGHT);
+		window.initModality(Modality.APPLICATION_MODAL);
 		window.show();
 	}
 	
@@ -271,6 +280,12 @@ public class View extends Application {
 						isShifted = true;
 						shiftedX = event.getSceneX();
 						shiftedY = event.getSceneY();
+						oldX = oldX - rectangle.getX();
+						oldY = oldY - rectangle.getY();
+						rectangle.setX(contr.getViewCoord(rectangle.getX()));
+						rectangle.setY(contr.getViewCoord(rectangle.getY() - MENU_HEIGHT) + MENU_HEIGHT);
+						oldX = oldX + rectangle.getX();
+						oldY = oldY + rectangle.getY();
 						return;
 					}
 					oldX = event.getSceneX();
@@ -410,7 +425,7 @@ public class View extends Application {
 	/**
 	 * Height of menu bar.
 	*/
-	private double MENU_HEIGHT = 30;
+	private double MENU_HEIGHT = 25;
 	/**
 	 * Height of scene.
 	*/
@@ -439,6 +454,14 @@ public class View extends Application {
 	 * Height of confirmition window.
 	*/
 	private double WINDOW_HEIGHT = 200;
+	/**
+	 * Height of title of window.
+	*/
+	private double TITLE_HEIGHT = 35;
+	/**
+	 * Width of outline.
+	*/
+	private double OUTLINE_WIDTH = 15;
 	/**
 	 * Width of confirmation window.
 	*/
