@@ -6,14 +6,26 @@ import java.nio.channels.*;
 import java.nio.*;
 
 public class TorrentClient {
-	TorrentClient(List<String> addreses){
+	TorrentClient(List<Integer> addreses, List<Boolean> hasPieces, int port){
 		this.addresses = addreses;
-		try(Scanner scan = new Scanner(new File("meta.torrent"))){
+		this.hasPieces = hasPieces;
+		isLoading = new ArrayList<Boolean>(hasPieces.size());
+		for(int i = 0; i < hasPieces.size(); ++i){
+			isLoading.add(false);
+		}
+		hasFile = true;
+		for(Boolean hasPiece : hasPieces){
+			if(!hasPiece){
+				hasFile = false;
+				break;
+			}
+		}
+		try{
 			serverChannel = ServerSocketChannel.open();
 			serverChannel.configureBlocking(false);
 			ServerSocket serverSocket = serverChannel.socket();
 			selector = Selector.open();
-			InetSocketAddress inetSocketAddress = new InetSocketAddress(PORT);
+			InetSocketAddress inetSocketAddress = new InetSocketAddress(port);
 			serverSocket.bind(inetSocketAddress);
 			serverChannel.register(selector, SelectionKey.OP_ACCEPT);
 		}
@@ -38,7 +50,19 @@ public class TorrentClient {
 			HAS_READ_META = false;
 		}
 		threadPool = new ScheduledThreadPoolExecutor(N);
-		//threadPool.execute(new MainWorker(selector, serverSocket, threadPool, name, length, pieceLength));*/
+		threadPool.execute(new FileThread(name, pieceLength, request));
+		
+		for(Integer anotherPort : addresses){
+			try{
+				SocketChannel channel = SocketChannel.open(new InetSocketAddress(anotherPort));
+				peers.put(anotherPort, new Peer(false, true));
+				channel.configureBlocking(false);
+				channel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+			}
+			catch(IOException ex){
+				System.out.println("Can't connect to " + anotherPort);
+			}
+		}
 		selectorWork();
 	}
 	
@@ -59,25 +83,108 @@ public class TorrentClient {
 			while (itor.hasNext()) {
 				SelectionKey selectionKey = itor.next();
 				itor.remove();
-				if(selectionKey.isAcceptable()){
-					try {
-						List<Boolean> hasPieces = new ArrayList<Boolean>();
-						hasPieces.add(true);
-						hasPieces.add(true);
-						hasPieces.add(false);
-						hasPieces.add(true);
-						SocketChannel clientChannel = serverChannel.accept();
-						int piecesCount = length / pieceLength + ((length % pieceLength == 0) ? 0 : 1);
-						threadPool.execute(new LocalHandShaker(clientChannel, metaHash, myId, 
-						peers, piecesCount, hasPieces));
-					} 
-					catch (IOException e) {
-						e.printStackTrace();
-						selectionKey.cancel();
+				try {
+					SocketChannel clientChannel;
+					if(selectionKey.isAcceptable()){
+						clientChannel = serverChannel.accept();
+						int port =((InetSocketAddress)clientChannel.getRemoteAddress()).getPort();
+						synchronized(peers){
+							peers.put(port, new Peer(true, false));
+						}
+						clientChannel.configureBlocking(false);
+						clientChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
+						continue;
 					}
+					//try{
+						clientChannel = (SocketChannel)selectionKey.channel();
+					//}
+					//catch(ClassCastException ex){
+						//continue;
+					//}
+					int port =((InetSocketAddress)clientChannel.getRemoteAddress()).getPort();
+					Peer currentPeer;
+					synchronized(peers){
+						currentPeer = peers.get(port);
+						if(currentPeer.isBusy()){
+							continue;
+						}
+					}
+					if(selectionKey.isReadable()){
+						/*try{
+							Thread.sleep(1);
+						}
+						catch(InterruptedException ex){
+							System.out.println("LOL");
+						}*/
+						synchronized(currentPeer){
+							currentPeer.setIsBusy(true);
+							if(!currentPeer.isHandShaked() && currentPeer.isLocal()){
+								int piecesCount = length / pieceLength + ((length % pieceLength == 0) ? 0 : 1);
+								threadPool.execute(new LocalHandShaker(clientChannel, metaHash, myId, 
+								port, peers, piecesCount, hasPieces, selectionKey));
+								continue;
+							}
+							threadPool.execute(new Messager(port, peers, clientChannel, selectionKey, request, isLoading, hasPieces, length, pieceLength));
+						}
+					}
+					else if(selectionKey.isWritable()){
+						synchronized(currentPeer){
+							if(!currentPeer.isHandShaked() && currentPeer.isRemote()){
+								int piecesCount = length / pieceLength + ((length % pieceLength == 0) ? 0 : 1);
+								currentPeer.setIsBusy(true);
+								threadPool.execute(new RemoteHandShaker(clientChannel, metaHash, myId, 
+								port, peers, piecesCount, hasPieces, selectionKey));
+							}
+							/*else if(currentPeer.isLoading()){
+								continue;
+							}*/
+							else if(!hasFile && currentPeer.isHandShaked()){
+								for(int i = 0; i < hasPieces.size(); ++i){
+									if(hasPieces.get(i) && !currentPeer.knowHasPieces().get(i)){
+										System.out.println("have " + i + " to " + port);
+										byte[] text = new byte[INT_LENGTH];
+										text[0] = (byte)(i >> CHAR_BITS);
+										text[1] = (byte)(i % CHAR_MAX);
+										sendMessage(INT_LENGTH, HAVE, text, clientChannel);
+										currentPeer.knowHasPieces().set(i, true);
+									}
+									else if(!hasPieces.get(i) && currentPeer.hasPieces().get(i) && !isLoading.get(i)){
+										int currentPieceLength = (i == hasPieces.size() - 1 &&
+											length % pieceLength != 0) ? 
+											length % pieceLength : pieceLength;
+										isLoading.set(i, true);
+										currentPeer.setIsBusy(true);
+										threadPool.execute(new Loader(request, isLoading,
+											i, port, peers, currentPieceLength, clientChannel, selectionKey));
+										break;
+									}
+								}
+							}
+						}
+					}
+				} 
+				catch (IOException e) {
+					e.printStackTrace();
+					selectionKey.cancel();
+				}
+				catch (RuntimeException e) {
+					e.printStackTrace();
+					selectionKey.cancel();
 				}
 			}
 		}
+	}
+	
+	private void sendMessage(int length, int index, byte[] load, SocketChannel clientChannel) throws IOException{
+        ByteBuffer buf = ByteBuffer.allocateDirect(length + INT_LENGTH + INDEX_LENGTH);
+		buf.put((byte)(length >> CHAR_BITS));
+		buf.put((byte)(length % CHAR_MAX));
+		buf.put((byte)index);
+		if(load != null){
+			buf.put(load);
+		}
+		buf.flip();
+		clientChannel.write(buf);
 	}
 	
 	public boolean hasServerSocket(){
@@ -88,64 +195,26 @@ public class TorrentClient {
 		return HAS_READ_META;
 	}
 	
-	public void getFile(){
-		/*int i;
-		for(i = 0; i < length / pieceLength; ++i){
-			Socket socket;
-			try{
-				socket = new Socket(peers.get(i % peers.size()), PORT);
-			}
-			catch(UnknownHostException ex){
-				ex.printStackTrace();
-				return;
-			}
-			catch(IOException ex){
-				ex.printStackTrace();
-				return;
-			}
-				loadThreadPool.execute(new LoadWorker(socket, name, length, pieceLength, i));
-		}
-		++i;
-		if(length % pieceLength != 0){
-			Socket socket;
-			try{
-				socket = new Socket(peers.get(i % peers.size()), PORT);
-			}
-			catch(UnknownHostException ex){
-				ex.printStackTrace();
-				return;
-			}
-			catch(IOException ex){
-				ex.printStackTrace();
-				return;
-			}
-			loadThreadPool.execute(new LoadWorker(socket, name, length % pieceLength, pieceLength, i));
-		}
-		//while(loadThreadPool.getActiveCount() != 0){}
-		try(File file = new File(name);
-		FileWriter fileWriter = new FileWriter(file)){
-			file.createNewFile();
-			for(i = 0; i < length / pieceLength; ++i){
-				File
-				Socket socket = new Socket(peers.get(i % peers.size()), PORT);
-				loadThreadPool.execute();
-			}
-		}*/
-	}
-	
-	private int PORT = 2048;
 	private Executor threadPool;
-	private Executor loadThreadPool;
+	private Request request = new Request();
 	private int N = 10;
 	private ServerSocketChannel serverChannel;
 	private Selector selector;
 	private int length;
 	private int pieceLength;
 	private String name;
-	private List<String> addresses;
+	private List<Integer> addresses;
 	private boolean HAS_READ_META = true;
 	private int BLOCK_LENGTH = 10;
-	private List<Peer> peers = new ArrayList<Peer>();
-	private String myId = "cod2";
+	private Map<Integer, Peer> peers = new HashMap<Integer, Peer>();
+	private String myId = "cod1";
 	private String metaHash = "code";
+	private boolean hasFile;
+	private List<Boolean> hasPieces;
+	private List<Boolean> isLoading;
+	private int INT_LENGTH = 2;
+	private int INDEX_LENGTH = 1;
+	private int CHAR_BITS = 16;
+	private int CHAR_MAX = 65536;
+	private final int HAVE = 4;
 }

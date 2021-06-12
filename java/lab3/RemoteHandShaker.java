@@ -5,9 +5,9 @@ import java.util.*;
 import java.nio.channels.*;
 import java.nio.*;
 
-public class LocalHandShaker implements Runnable{
+public class RemoteHandShaker implements Runnable{
 	
-	LocalHandShaker(SocketChannel clientChannel, String metaHash, String myId, 
+	RemoteHandShaker(SocketChannel clientChannel, String metaHash, String myId, 
 	int port, Map<Integer, Peer> peers, int piecesCount, List<Boolean> hasPieces, SelectionKey selectionKey) {
 		this.clientChannel = clientChannel;
 		this.metaHash = metaHash;
@@ -23,38 +23,28 @@ public class LocalHandShaker implements Runnable{
 	@Override
 	public void run() {
 		try{
-			String line;
-			ByteBuffer buf = ByteBuffer.allocateDirect(1);
-			clientChannel.read(buf);
-			buf.flip();
-			int length = buf.get();
-			if(length != MES_LENGTH){
-				return;
+			ByteBuffer buf = ByteBuffer.allocateDirect(1 + MES_LENGTH + HASH_LENGTH + ID_LENGTH);
+			buf.put((byte) MES_LENGTH);
+			for(int i = 0; i < MES_LENGTH; ++i){
+				buf.put((byte)PROTOCOL.charAt(i));
 			}
-			buf = ByteBuffer.allocateDirect(length);
-			clientChannel.read(buf);
-			buf.flip();
-			byte[] mes = new byte[length];
-			buf.get(mes);
-			if((new String(mes)).compareTo(PROTOCOL) != 0){
-				return;
+			for(int i = 0; i < HASH_LENGTH; ++i){
+				buf.put((byte)metaHash.charAt(i));
 			}
-			buf = ByteBuffer.allocateDirect(HASH_LENGTH);
-			mes = new byte[HASH_LENGTH];
-			clientChannel.read(buf);
-			buf.flip();
-			buf.get(mes);
-			if((new String(mes)).compareTo(metaHash) != 0){
-				return;
+			for(int i = 0; i < ID_LENGTH; ++i){
+				buf.put((byte)myId.charAt(i));
 			}
-			buf = ByteBuffer.allocateDirect(ID_LENGTH);
-			mes = new byte[ID_LENGTH];
-			clientChannel.read(buf);
 			buf.flip();
-			buf.get(mes);
-			if((new String(mes)).compareTo(myId) == 0){
-				return;
-			}
+			clientChannel.write(buf);
+			int length = getHasPiecesLength();
+			buf = ByteBuffer.allocateDirect(length + 3);
+			buf.put((byte)(length >> CHAR_BITS));
+			buf.put((byte)(length % CHAR_MAX));
+			buf.put((byte)BIT_FIELD);
+			createBitField(buf, length);
+			buf.flip();
+			clientChannel.write(buf);
+			while(!selectionKey.isReadable()){}
 			length = readInt(INT_LENGTH);
 			buf = ByteBuffer.allocateDirect(1);
 			clientChannel.read(buf);
@@ -64,21 +54,13 @@ public class LocalHandShaker implements Runnable{
 				return;
 			}
 			buf = ByteBuffer.allocateDirect(length);
-			mes = new byte[length];
+			byte[] mes = new byte[length];
 			clientChannel.read(buf);
 			buf.flip();
 			buf.get(mes);
-			synchronized(peers){
+			synchronized(peers.get(port)){
 				peers.get(port).setHasPieces(getBitField(length, new String(mes)));
 				peers.get(port).setKnowHasPieces(new ArrayList<Boolean>(hasPieces));
-				length = getHasPiecesLength();
-				buf = ByteBuffer.allocateDirect(length + 3);
-				buf.put((byte)(length >> CHAR_BITS));
-				buf.put((byte)(length % CHAR_MAX));
-				buf.put((byte)BIT_FIELD);
-				createBitField(buf, length);
-				buf.flip();
-				clientChannel.write(buf);
 				peers.get(port).setIsHandShaked(true);
 				peers.get(port).setIsBusy(false);
 			}
