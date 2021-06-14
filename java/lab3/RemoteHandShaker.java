@@ -61,6 +61,11 @@ public class RemoteHandShaker implements Runnable{
 			synchronized(peers.get(port)){
 				peers.get(port).setHasPieces(getBitField(length, new String(mes)));
 				peers.get(port).setKnowHasPieces(new ArrayList<Boolean>(hasPieces));
+				List<Boolean> isLoading = new ArrayList<Boolean>(hasPieces.size());
+				for(int i = 0; i < hasPieces.size(); ++i){
+					isLoading.add(false);
+				}
+				peers.get(port).setIsLoading(isLoading);
 				peers.get(port).setIsHandShaked(true);
 				peers.get(port).setIsBusy(false);
 			}

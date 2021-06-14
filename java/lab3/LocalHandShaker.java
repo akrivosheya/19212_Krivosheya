@@ -71,6 +71,11 @@ public class LocalHandShaker implements Runnable{
 			synchronized(peers){
 				peers.get(port).setHasPieces(getBitField(length, new String(mes)));
 				peers.get(port).setKnowHasPieces(new ArrayList<Boolean>(hasPieces));
+				List<Boolean> isLoading = new ArrayList<Boolean>(hasPieces.size());
+				for(int i = 0; i < hasPieces.size(); ++i){
+					isLoading.add(false);
+				}
+				peers.get(port).setIsLoading(isLoading);
 				length = getHasPiecesLength();
 				buf = ByteBuffer.allocateDirect(length + 3);
 				buf.put((byte)(length >> CHAR_BITS));

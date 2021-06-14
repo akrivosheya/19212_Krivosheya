@@ -16,12 +16,12 @@ public class Peer{
 		return knowHasPieces;
 	}
 	
-	public boolean isChocked(){
-		return isChocked;
+	public List<Boolean> isLoading(){
+		return isLoading;
 	}
 	
-	public boolean isLoading(){
-		return isLoading;
+	public boolean isChocked(){
+		return isChocked;
 	}
 	
 	public boolean isBusy(){
@@ -72,12 +72,13 @@ public class Peer{
 		isHandShaked = flag;
 	}
 	
-	public void setIsLoading(boolean flag){
-		isLoading = flag;
+	public void setIsLoading(List<Boolean> isLoading){
+		this.isLoading = isLoading;
 	}
 	
 	private List<Boolean> hasPieces;
 	private List<Boolean> knowHasPieces;
+	private List<Boolean> isLoading;
 	private boolean isChocked = false;
 	private boolean isInterested = false;
 	private boolean hasRequest = false;
@@ -85,5 +86,4 @@ public class Peer{
 	private boolean isBusy;
 	private boolean isLocal;
 	private boolean isRemote;
-	private boolean isLoading = false;
 }

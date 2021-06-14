@@ -50,7 +50,7 @@ public class TorrentClient {
 			HAS_READ_META = false;
 		}
 		threadPool = new ScheduledThreadPoolExecutor(N);
-		threadPool.execute(new FileThread(name, pieceLength, request));
+		threadPool.execute(new FileThread(name, pieceLength, requests));
 		
 		for(Integer anotherPort : addresses){
 			try{
@@ -95,12 +95,7 @@ public class TorrentClient {
 						clientChannel.register(selector, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 						continue;
 					}
-					//try{
-						clientChannel = (SocketChannel)selectionKey.channel();
-					//}
-					//catch(ClassCastException ex){
-						//continue;
-					//}
+					clientChannel = (SocketChannel)selectionKey.channel();
 					int port =((InetSocketAddress)clientChannel.getRemoteAddress()).getPort();
 					Peer currentPeer;
 					synchronized(peers){
@@ -110,12 +105,6 @@ public class TorrentClient {
 						}
 					}
 					if(selectionKey.isReadable()){
-						/*try{
-							Thread.sleep(1);
-						}
-						catch(InterruptedException ex){
-							System.out.println("LOL");
-						}*/
 						synchronized(currentPeer){
 							currentPeer.setIsBusy(true);
 							if(!currentPeer.isHandShaked() && currentPeer.isLocal()){
@@ -124,7 +113,7 @@ public class TorrentClient {
 								port, peers, piecesCount, hasPieces, selectionKey));
 								continue;
 							}
-							threadPool.execute(new Messager(port, peers, clientChannel, selectionKey, request, isLoading, hasPieces, length, pieceLength));
+							threadPool.execute(new Messager(port, peers, clientChannel, selectionKey, requests, isLoading, hasPieces, length, pieceLength));
 						}
 					}
 					else if(selectionKey.isWritable()){
@@ -135,9 +124,6 @@ public class TorrentClient {
 								threadPool.execute(new RemoteHandShaker(clientChannel, metaHash, myId, 
 								port, peers, piecesCount, hasPieces, selectionKey));
 							}
-							/*else if(currentPeer.isLoading()){
-								continue;
-							}*/
 							else if(!hasFile && currentPeer.isHandShaked()){
 								for(int i = 0; i < hasPieces.size(); ++i){
 									if(hasPieces.get(i) && !currentPeer.knowHasPieces().get(i)){
@@ -153,8 +139,9 @@ public class TorrentClient {
 											length % pieceLength != 0) ? 
 											length % pieceLength : pieceLength;
 										isLoading.set(i, true);
+										peers.get(port).isLoading().set(i, true);
 										currentPeer.setIsBusy(true);
-										threadPool.execute(new Loader(request, isLoading,
+										threadPool.execute(new Loader(isLoading,
 											i, port, peers, currentPieceLength, clientChannel, selectionKey));
 										break;
 									}
@@ -196,7 +183,7 @@ public class TorrentClient {
 	}
 	
 	private Executor threadPool;
-	private Request request = new Request();
+	private Queue<Request> requests = new ArrayDeque<Request>();
 	private int N = 10;
 	private ServerSocketChannel serverChannel;
 	private Selector selector;
@@ -207,7 +194,7 @@ public class TorrentClient {
 	private boolean HAS_READ_META = true;
 	private int BLOCK_LENGTH = 10;
 	private Map<Integer, Peer> peers = new HashMap<Integer, Peer>();
-	private String myId = "cod1";
+	private String myId = "cod3";
 	private String metaHash = "code";
 	private boolean hasFile;
 	private List<Boolean> hasPieces;

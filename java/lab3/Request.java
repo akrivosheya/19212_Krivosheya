@@ -13,6 +13,10 @@ public class Request{
 		this.mode = mode;
 	}
 	
+	public void setIsDone(boolean flag){
+		isDone = flag;
+	}
+	
 	public void setOffset(int offset){
 		this.offset = offset;
 	}
@@ -40,10 +44,15 @@ public class Request{
 	public byte[] getText(){
 		return text;
 	}
+	
+	public boolean isDone(){
+		return isDone;
+	}
 
 	private char mode;
 	private int piece;
 	private int offset;
 	private int blockLength;
+	private boolean isDone = false;
 	private byte[] text;
 }

@@ -6,9 +6,8 @@ import java.nio.channels.*;
 import java.nio.*;
 
 public class Loader implements Runnable{
-	Loader(Request request, List<Boolean> isLoading, int piece,
+	Loader(List<Boolean> isLoading, int piece,
 	int port, Map<Integer, Peer> peers, int pieceLength, SocketChannel channel, SelectionKey selectionKey){
-		this.request = request;
 		this.isLoading = isLoading;
 		this.piece = piece;
 		this.port = port;
@@ -31,39 +30,8 @@ public class Loader implements Runnable{
 					(byte)(offset >> CHAR_BITS), (byte)(offset % CHAR_MAX),
 					(byte)(blockLength >> CHAR_BITS), (byte)(blockLength % CHAR_MAX)};
 				sendMessage(REQUEST_LENGTH, REQUEST, mes);
-				/*try{
-					Thread.sleep(1000);
-				}
-				catch(InterruptedException ex){
-					System.out.println("LOL");
-				}
-				length = readInt(INT_LENGTH);
-				index = readInt(INDEX_LENGTH);
-				System.out.println(index);
-				recPiece = readInt(INT_LENGTH);
-				recOffset = readInt(INT_LENGTH);
-				readByteArr(length - INT_LENGTH * 2, text, recOffset);*/
 				offset += BLOCK_LENGTH;
 			}
-			/*try{
-				synchronized(request){
-					request.setPiece(piece);
-					request.setOffset(0);
-					request.setBlockLength(pieceLength);
-					request.setText(text);
-					request.setMode(WRITE);
-					request.notify();
-					request.wait();
-				}
-			}
-			catch(InterruptedException ex){
-				text = null;
-				sendMessage(0, CHOCK, text);
-			}
-			text = new byte[]{(byte)(piece >> CHAR_BITS), (byte)(piece % CHAR_MAX),
-				(byte)(offset >> CHAR_BITS), (byte)(offset % CHAR_MAX),
-				(byte)(blockLength >> CHAR_BITS), (byte)(blockLength % CHAR_MAX)};
-			sendMessage(CANCEL_LENGTH, CANCEL, text);*/
 		}
 		catch(IOException ex){
 			selectionKey.cancel();
@@ -79,7 +47,6 @@ public class Loader implements Runnable{
 		}
 		synchronized(peers){
 			peers.get(port).setIsBusy(false);
-			//hasPieces.set(piece, true);
 		}
 	}
 	
@@ -113,7 +80,6 @@ public class Loader implements Runnable{
 		return numb;
 	}
 	
-	private Request request;
 	private List<Boolean> isLoading;
 	private int piece;
 	private int port;

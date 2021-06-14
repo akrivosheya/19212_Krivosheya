@@ -8,12 +8,12 @@ import java.nio.*;
 class Messager implements Runnable{
 	
 	Messager(int port, Map<Integer, Peer> peers, SocketChannel clientChannel, SelectionKey selectionKey,
-	Request request, List<Boolean> isLoading, List<Boolean> hasPieces, int fileLength, int pieceLength) {
+	Queue<Request> requests, List<Boolean> isLoading, List<Boolean> hasPieces, int fileLength, int pieceLength) {
 		this.port = port;
 		this.peers = peers;
 		this.clientChannel = clientChannel;
 		this.selectionKey = selectionKey;
-		this.request = request;
+		this.requests = requests;
 		this.isLoading = isLoading;
 		this.hasPieces = hasPieces;
 		this.fileLength = fileLength;
@@ -23,12 +23,6 @@ class Messager implements Runnable{
 	@Override
 	public void run() {
 		try{
-			/*try{
-				Thread.sleep(1000);
-			}
-			catch(InterruptedException ex){
-				System.out.println("LOL");
-			}*/
 			int length = readInt(INT_LENGTH);
 			int index = readInt(INDEX_LENGTH);
 			int piece, offset, blockLength;
@@ -49,25 +43,28 @@ class Messager implements Runnable{
 						break;
 					case HAVE:
 						piece = readInt(INT_LENGTH);
-			System.out.println(port + " have " + piece);
+						System.out.println(port + " have " + piece);
 						peers.get(port).hasPieces().set(piece, true); 
 						break;
 					case REQUEST:
-						//peers.get(port).setIsLoading(true);
 						piece = readInt(INT_LENGTH);
 						offset = readInt(INT_LENGTH);
 						blockLength = readInt(INT_LENGTH);
-			System.out.println(port + " rec " + piece + " " + offset);
+						System.out.println(port + " rec " + piece + " " + offset);
 						text = new byte[blockLength + 4];
 						try{
-							synchronized(request){
+							synchronized(requests){
+								Request request = new Request();
 								request.setPiece(piece);
 								request.setOffset(offset);
 								request.setBlockLength(blockLength);
 								request.setText(text);
 								request.setMode(READ);
-								request.notify();
-								request.wait();
+								requests.add(request);
+								while(!request.isDone()){
+									requests.notify();
+									requests.wait();
+								}
 								text[0] = ((byte)(piece >> CHAR_BITS));
 								text[1] = ((byte)(piece % CHAR_MAX));
 								text[2] = ((byte)(offset >> CHAR_BITS));
@@ -86,14 +83,18 @@ class Messager implements Runnable{
 						text = new byte[length - INT_LENGTH * 2];
 						readByteArr(length - INT_LENGTH * 2, text);
 						try{
-							synchronized(request){
+							synchronized(requests){
+								Request request = new Request();
 								request.setPiece(piece);
 								request.setOffset(offset);
 								request.setBlockLength(length - INT_LENGTH * 2);
 								request.setText(text);
 								request.setMode(WRITE);
-								request.notify();
-								request.wait();
+								requests.add(request);
+								while(!request.isDone()){
+									requests.notify();
+									requests.wait();
+								}
 							}
 						}
 						catch(InterruptedException ex){
@@ -107,16 +108,16 @@ class Messager implements Runnable{
 							hasPieces.set(piece, true);
 							isLoading.set(piece, false);
 							System.out.println("Loaded " + piece + " piece");
+							peers.get(port).isLoading().set(piece, false);
 						}
 						break;
 					case CANCEL:
 						piece = readInt(INT_LENGTH);
 						offset = readInt(INT_LENGTH);
 						blockLength = readInt(INT_LENGTH);
-						//peers.get(port).setIsLoading(false);
 						break;
 					default:
-			System.out.println(port + " undefinded " + index);
+						System.out.println(port + " undefinded " + index);
 						break;
 				}
 			}
@@ -124,12 +125,15 @@ class Messager implements Runnable{
 		}
 		catch (IOException ex) {
 			selectionKey.cancel();
+			for(int i = 0; i < peers.get(port).isLoading().size(); ++i){
+				if(peers.get(port).isLoading().get(i)){
+					isLoading.set(i, false);
+				}
+			}
 			peers.remove(port);
 			ex.printStackTrace();
 		}
 		catch (RuntimeException ex) {
-			//selectionKey.cancel();
-			//peers.remove(port);
 			System.out.println(port + "Can't read");
 			ex.printStackTrace();
 			return;
@@ -182,7 +186,7 @@ class Messager implements Runnable{
 	private List<Boolean> isLoading;
 	private List<Boolean> hasPieces;
 	private SocketChannel clientChannel;
-	private Request request;
+	private Queue<Request> requests;
 	private SelectionKey selectionKey;
 	private int INT_LENGTH = 2;
 	private int INDEX_LENGTH = 1;
