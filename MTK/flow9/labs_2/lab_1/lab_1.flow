@@ -1,0 +1,88 @@
+import lingo/pegcode/driver;
+import runtime;
+import lingo/labs_2/lab_1/lab_2_1;
+import math/math;
+
+lingoGrammarOp : ref Maybe<[PegOp]> = ref None();
+
+lingoGrammar() {
+	onlyOnce(lingoGrammarOp, \ -> {
+		compilePegGrammar("#include lingo/labs_2/lab_1/lab_1.lingo");
+	});
+}
+
+getStringExpr(expr: Expr) -> string;
+getExprRes(expr: Expr) -> double;
+
+main() {
+	result = parsic(lingoGrammar(), "", defaultPegActions);
+	println(result);
+	println("");
+	println(getStringExpr(result));
+	println("\nResult:");
+	println(getExprRes(result));
+	quit(0);
+}
+
+getStringExpr(expr: Expr){
+	switch(expr : Expr){
+		Node(exp1, exp2) : {
+			strings	= [getStringExpr(exp1), getStringExpr(exp2)];
+			concatStrings(strings);
+		}
+		Brackets(bracketsExp) : {
+			strings = ["(", getStringExpr(bracketsExp), ")"];
+			concatStrings(strings);
+		}
+		Ter(symb, expWithSign) : {
+			if(symb == "p" || symb == "s" || symb == "m"){
+				getStringExpr(expWithSign);
+			} else {
+				strings = [symb, getStringExpr(expWithSign)];
+				concatStrings(strings);
+			}
+		}
+		Int(dec) : {
+			i2s(dec);
+		}
+	}
+}
+
+getExprRes(expr: Expr){
+	switch(expr : Expr){
+		Node(exp1, exp2) : {
+			symb = switch(exp1){
+				Ter(symb, expSigned) : symb;
+				Int(dec) : "0";
+				Brackets(expb) : "0";
+				Node(expr1, expr2) : "0";
+			}
+			if(symb == "s" || symb == "+" || symb == "-"){
+				getExprRes(exp1) + getExprRes(exp2);
+			} else if(symb == "m" || symb == "*" || symb == "/"){
+				getExprRes(exp1) * getExprRes(exp2);
+			} else if(symb == "p" || symb == "^"){
+				dpow(getExprRes(exp1), getExprRes(exp2));
+			}else{
+				0.0;
+			}
+		}
+		Brackets(bracketsExp) : {
+			getExprRes(bracketsExp);
+		}
+		Ter(symb, expWithSign) : {
+			if(symb == "s" || symb == "+" || symb == "m" || symb == "*" || symb == "p" || symb == "^"){
+				getExprRes(expWithSign);
+			} else if(symb == "-"){
+				-1.0 * getExprRes(expWithSign);
+			} else if(symb == "/"){
+				1.0 / getExprRes(expWithSign);
+			} else {
+				0.0;
+			}
+		}
+		Int(dec) : {
+			i2d(dec);
+		}
+	}
+}

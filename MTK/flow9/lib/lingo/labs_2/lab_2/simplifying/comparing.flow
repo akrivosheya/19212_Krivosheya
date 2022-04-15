@@ -1,0 +1,275 @@
+import runtime;
+import ds/vector;
+import lingo/labs_2/lab_2/structs;
+
+export{
+	findSameProduct(sum : Vector<SignedProduct>, product1 : SignedProduct, index : int, max : int, strongType : bool, 
+		strongValue : bool) -> int;
+	findSameMul(product : Vector<Mul>, mul1 : Mul, index : int, max : int, strongBaseValue : bool, 
+		strongBaseType : bool, strongPowerSign : bool, strongPower : bool) -> int;
+		
+	getInt(exp: DecomposedExpr) -> int;
+	isInt(exp: DecomposedExpr) -> bool;
+		
+	sameExpr(exp1 : DecomposedExpr, exp2 : DecomposedExpr, strongType : bool, strongValue : bool) -> bool;
+	sameMul(mul1 : Mul, mul2 : Mul, strongBaseValue : bool, strongBaseType : bool, strongPowerSign : bool, 
+		strongPower : bool) -> bool;
+	sameProduct(product1 : Vector<Mul>, product2 : Vector<Mul>, strongSameness : bool) -> bool;
+	sameSum(sum1 : Vector<SignedProduct>, sum2 : Vector<SignedProduct>, strongSameness : bool) -> bool;
+}
+
+findSameProduct(sum : Vector<SignedProduct>, product1 : SignedProduct, index : int, max : int, strongType : bool, strongValue : bool){
+	product2 = getVectorUnsafe(sum, index);
+	if(sameExpr(product1, product2, strongType, strongValue)){
+		index;
+	}
+	else if(index < max - 1){
+		findSameProduct(sum, product1, index + 1, max, strongType, strongValue);
+	}
+	else{
+		max;
+	}
+}
+
+findSameMul(product : Vector<Mul>, mul1 : Mul, index : int, max : int, strongBaseValue : bool, 
+	strongBaseType : bool, strongPowerSign : bool, strongPower : bool){
+	mul2 = getVectorUnsafe(product, index);
+	if(sameMul(mul1, mul2, strongBaseValue, strongBaseType, strongPowerSign, strongPower)){
+		index;
+	}
+	else if(index < max - 1){
+		findSameMul(product, mul1, index + 1, max, strongBaseValue, strongBaseType, strongPowerSign, strongPower);
+	}
+	else{
+		max;
+	}
+}
+
+sameMul(mul1 : Mul, mul2 : Mul, strongBaseValue : bool, strongBaseType : bool, strongPowerSign : bool, strongPower : bool){
+	if(sameExpr(mul1.base, mul2.base, strongBaseType, strongBaseValue) && 
+	sameExpr(mul1.pow, mul2.pow, strongPower, strongPower) && (!strongPowerSign || mul1.powSign == mul2.powSign)){
+		true;
+	}
+	else{
+		false;
+	}
+}
+
+sameProduct(product1 : Vector<Mul>, product2 : Vector<Mul>, strongSameness : bool){
+	max = sizeVector(product1);
+	if(strongSameness && max != sizeVector(product2)){
+		false;
+	}
+	else{
+		foldVector(product1, true, \isSame,mul -> {
+			if(max == findSameMul(product2, mul, 0, max, true, true, true, true)){
+				false && isSame;
+			}
+			else{
+				true && isSame;
+			}
+		});
+	}
+}
+
+sameSum(sum1 : Vector<SignedProduct>, sum2 : Vector<SignedProduct>, strongSameness : bool){
+	max = sizeVector(sum1);
+	if(sizeVector(sum1) != sizeVector(sum2)){
+		false;
+	}
+	else{
+		foldVector(sum1, true, \isSame,product -> {
+			if(max == findSameProduct(sum2, product, 0, max, strongSameness, strongSameness)){
+				false && isSame;
+			}
+			else{
+				true && isSame;
+			}
+		});
+	}
+}
+
+isInt(exp : DecomposedExpr){
+	switch(exp){
+		Sum(sum) : {
+			if(sizeVector(sum) == 1){
+				productWithSign1 = getVectorUnsafe(sum, 0);
+				if(sizeVector(productWithSign1.product) == 1){
+					mul = getVectorUnsafe(productWithSign1.product, 0);
+					if(isInt(mul.pow)){
+						switch(mul.base){
+							Sum(sum3) : {
+								false;
+							}
+							SignedProduct(sign, product) : {
+								false;
+							}
+							Int(dec) : {
+								true;
+							}
+							Letter(letter) : {
+								false;
+							}
+						}
+					}
+					else{
+						false;
+					}
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		SignedProduct(sign, product) : {
+			if(sizeVector(product) == 1){
+				mul = getVectorUnsafe(product, 0);
+				sameMul(mul, Mul(Int(1), Int(1), 1), false, true, true, true);
+			}
+			else{
+				false;
+			}
+		}
+		Int(dec) : {
+			true;
+		}
+		Letter(letter) : {
+			false;
+		}
+	}
+}
+
+getInt(exp : DecomposedExpr){
+	switch(exp){
+		Sum(sum) : {
+			if(sizeVector(sum) == 1){
+				productWithSign1 = getVectorUnsafe(sum, 0);
+				if(sizeVector(productWithSign1.product) == 1){
+					mul = getVectorUnsafe(productWithSign1.product, 0);
+					if(isInt(mul.pow)){
+						switch(mul.base){
+							Sum(sum3) : {
+								0;
+							}
+							SignedProduct(sign, product) : {
+								0;
+							}
+							Int(dec) : {
+								dec;
+							}
+							Letter(letter) : {
+								0;
+							}
+						}
+					}
+					else{
+						0;
+					}
+				}
+				else{
+					0;
+				}
+			}
+			else{
+				0;
+			}
+		}
+		SignedProduct(sign, product) : {
+			mul = getVectorUnsafe(product, 0);
+			getInt(mul.base);
+		}
+		Int(dec) : {
+			dec;
+		}
+		Letter(letter) : {
+			0;
+		}
+	}
+}
+
+sameExpr(exp1 : DecomposedExpr, exp2 : DecomposedExpr, strongType : bool, strongValue : bool){
+	switch(exp1){
+		Sum(sum1) : {
+			switch(exp2){
+				Sum(sum2) : {
+					!strongType || sameSum(sum1, sum2, strongValue);
+				}
+				SignedProduct(sign, product) : {
+					!strongType || false;
+				}
+				Int(dec) : {
+					!strongType || false;
+				}
+				Letter(symb) : {
+					!strongType || false;
+				}
+			}
+		}
+		SignedProduct(sign1, product1) :{
+			switch(exp2){
+				Sum(sum) : {
+					false;
+				}
+				SignedProduct(sign2, product2) : {
+					if(!strongType || ^sign1 == ^sign2){
+						sameProduct(product1, product2, strongValue);
+					}
+					else{
+						false;
+					}
+				}
+				Int(dec) : {
+					false;
+				}
+				Letter(symb) : {
+					false;
+				}
+			}
+		}
+		Int(dec1) : {
+			switch(exp2){
+				Sum(sum) : {
+					!strongType || false;
+				}
+				SignedProduct(sign, product) : {
+					!strongType || false;
+				}
+				Int(dec2) : {
+					if(!strongValue || dec1 == dec2){
+						true;
+					}
+					else{
+						!strongType || false;
+					}
+				}
+				Letter(symb) : {
+					!strongType || false;
+				}
+			}
+		}
+		Letter(symb1) : {
+			switch(exp2){
+				Sum(sum) : {
+					!strongType || false;
+				}
+				SignedProduct(sign, product) : {
+					!strongType || false;
+				}
+				Int(dec) : {
+					!strongType || false;
+				}
+				Letter(symb2) : {
+					if(!strongValue || symb1 == symb2){
+						true;
+					}
+					else{
+						!strongType || false;
+					}
+				}
+			}
+		}
+	}
+}

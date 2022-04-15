@@ -1,0 +1,28 @@
+syntax = "proto2";
+
+option java_multiple_files = true;
+
+message SnakesProto{
+	required int32 x = 1;
+	required int32 y = 2;
+	repeated UnitProto units = 4;
+}
+
+message UnitProto{
+	required int32 code = 1;
+	optional int32 points = 2;
+	repeated SegmentProto segments = 3;
+	enum Direction {
+		UP = 0;
+		DOWN = 1;
+		LEFT = 2;
+		RIGHT = 3;
+	};
+	optional Direction direction = 4;
+}
+
+message SegmentProto{
+	required int32 x = 1;
+	required int32 y = 2;
+	required bool isHead = 3;
+}

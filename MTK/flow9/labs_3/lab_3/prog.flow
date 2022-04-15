@@ -1,0 +1,23 @@
+import lingo/pegcode/driver;
+import runtime;
+import lingo/labs_3/lab_3/structs;
+import lingo/labs_3/lab_3/execution;
+import lingo/labs_3/lab_3/translation;
+
+import ds/vector;
+
+lingoGrammarOp : ref Maybe<[PegOp]> = ref None();
+
+lingoGrammar() {
+	onlyOnce(lingoGrammarOp, \ -> {
+		compilePegGrammar("#include lingo/labs_3/lab_3/nemo.lingo");
+	});
+}
+
+main() {
+	result = parsic(lingoGrammar(), "var x:int;{{x:=10;print(x)}U{x:=2;print(x)}}", defaultPegActions);
+	println(result);
+	println("\nTranslation:");
+	println(translate(result));
+	quit(0);
+}

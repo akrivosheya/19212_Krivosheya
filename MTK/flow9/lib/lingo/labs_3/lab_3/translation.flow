@@ -1,0 +1,131 @@
+import runtime;
+import lingo/labs_3/lab_3/structs;
+import ds/hashmap;
+
+export{
+	translate(program : Program) -> ProgramVM;
+}
+
+translate(program : Program){
+	ProgramVM(program.declaration, bodyToOperators(program.body));
+}
+
+searchMaxInMarks(max : int, marks : MarkSequence){
+	switch(marks){
+		Int(decimal) : {
+			if(decimal > max){
+				decimal;
+			}
+			else{
+				max;
+			}
+		}
+		MarkNode(leftSequence, rightSequence) : {
+			leftMax = searchMaxInMarks(max, leftSequence);
+			rightMax = searchMaxInMarks(max, leftSequence);
+			if(leftMax > rightMax){
+				leftMax;
+			}
+			else{
+				rightMax;
+			}
+		}
+	}
+}
+
+maxMark(operators : [OperatorVM]){
+	fold(operators, 0, \max,operator -> {
+		maxInSet = searchMaxInMarks(max, operator.markSet.markSequence);
+		if(maxInSet > max){
+			maxInSet;
+		}
+		else{
+			max;
+		}
+	});
+}
+
+shiftMarksInSet(marks : MarkSequence, shift : int){
+	switch(marks){
+		Int(decimal) : {
+			Int(decimal + shift);
+		}
+		MarkNode(leftSequence, rightSequence) : {
+			newLeftSequence = shiftMarksInSet(leftSequence, shift);
+			newRightSequence = shiftMarksInSet(rightSequence, shift);
+			MarkNode(newLeftSequence, newRightSequence);
+		}
+	}
+}
+
+shiftMarks(operators : [OperatorVM], shift : int){
+	map(operators, \operator -> {
+		OperatorVM(Int(operator.mark.decimal + shift), operator.operator, 
+			MarkSet(shiftMarksInSet(operator.markSet.markSequence, shift)));
+	});
+}
+
+swapMarksInSequence(marks : MarkSequence, oldMark : int, newMark : int){
+	switch(marks){
+		Int(decimal) : {
+			if(decimal == oldMark){
+				Int(newMark);
+			}
+			else{
+				Int(decimal);
+			}
+		}
+		MarkNode(leftSequence, rightSequence) : {
+			MarkNode(swapMarksInSequence(leftSequence, oldMark, newMark), swapMarksInSequence(rightSequence, oldMark, newMark));
+		}
+	}
+}
+
+swapMarks(operators : [OperatorVM], oldMark : int, newMark : int){
+	map(operators, \operator -> {
+		mark = if(operator.mark.decimal == oldMark){
+			Int(newMark);
+		}
+		else{
+			operator.mark;
+		};
+		newMarkSet = MarkSet(swapMarksInSequence(operator.markSet.markSequence, oldMark, newMark));
+		OperatorVM(mark, operator.operator, newMarkSet);
+	});
+}
+
+bodyToOperators(body : Operator){
+	switch(body){
+		Assignement(letter, expr) : {
+			[OperatorVM(Int(0), Assignement(letter, expr), MarkSet(Int(1)))];
+		}
+		Condition(condition) : {
+			[OperatorVM(Int(0), Condition(condition), MarkSet(Int(1)))];
+		}
+		Print(expr) : {
+			[OperatorVM(Int(0), Print(expr), MarkSet(Int(1)))];
+		}
+		Sequence(firstOperator, secondOperator) : {
+			firstOperatorsVM = bodyToOperators(firstOperator);
+			secondOperatorsVM = bodyToOperators(secondOperator);
+			concat(firstOperatorsVM, shiftMarks(secondOperatorsVM, maxMark(firstOperatorsVM)));
+		}
+		Nondeterministic(firstOperator, secondOperator) : {
+			firstOperatorsVM = bodyToOperators(firstOperator);
+			maxFirstOperator = maxMark(firstOperatorsVM);
+			secondOperatorsVM = bodyToOperators(secondOperator);
+			maxSecondOperator = maxMark(firstOperatorsVM);
+			startingOperatorVM = [OperatorVM(Int(0), Condition(Boolean(1)), MarkSet(MarkNode(Int(1), 
+				Int(maxFirstOperator + 1))))];
+			concat(concat(startingOperatorVM, shiftMarks(secondOperatorsVM, maxFirstOperator + 1)), 
+				swapMarks(shiftMarks(firstOperatorsVM, 1), maxFirstOperator + 1, maxFirstOperator + maxSecondOperator + 1));
+		}
+		Iteration(operator) : {
+			operatorVM = bodyToOperators(operator);
+			maxMark = maxMark(operatorVM);
+			startingOperatorVM = [OperatorVM(Int(0), Condition(Boolean(1)), MarkSet(MarkNode(Int(1), 
+				Int(maxMark + 1))))];
+			concat(startingOperatorVM, swapMarks(shiftMarks(operatorVM, 1), maxMark + 1, 0));
+		}
+	}
+}

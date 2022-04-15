@@ -1,0 +1,32 @@
+import lingo/pegcode/driver;
+import runtime;
+import lingo/labs_2/lab_2/structs;
+import lingo/labs_2/lab_2/simplifying/simplifying;
+import lingo/labs_2/lab_2/differentiation/differentiation;
+import lingo/labs_2/lab_2/ast;
+
+import ds/vector;
+
+lingoGrammarOp : ref Maybe<[PegOp]> = ref None();
+
+lingoGrammar() {
+	onlyOnce(lingoGrammarOp, \ -> {
+		compilePegGrammar("#include lingo/labs_2/lab_2/lab_2.lingo");
+	});
+}
+
+main() {
+	result = parsic(lingoGrammar(), "1/x", defaultPegActions);
+	println(result);
+	println("");
+	println(getStringExpr(result));
+	println("\nResult:");
+	variables : HashMap<string, double> = makeHashMap(hash);
+	println(getExprRes(result, variables));
+	println("\nSimplifyed:");
+	println(getStringExpr(simplify(result)));
+	println("\nDifferentiated:");
+	println(getStringExpr(differentiate(result, "x")));
+	quit(0);
+}
+

@@ -1,0 +1,19 @@
+import lingo/pegcode/driver;
+import runtime;
+import lingo/labs_3/lab_1/structs;
+
+import ds/vector;
+
+lingoGrammarOp : ref Maybe<[PegOp]> = ref None();
+
+lingoGrammar() {
+	onlyOnce(lingoGrammarOp, \ -> {
+		compilePegGrammar("#include lingo/labs_3/lab_1/nemo.lingo");
+	});
+}
+
+main() {
+	result = parsic(lingoGrammar(), "var x:bool;var y:[int];{{x:=falseUy:=set(y,2,3)};{y:=get([1,2],2)Ux:=1}}", defaultPegActions);
+	println(result);
+	quit(0);
+}

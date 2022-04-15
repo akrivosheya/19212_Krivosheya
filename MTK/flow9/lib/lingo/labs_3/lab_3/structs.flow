@@ -1,0 +1,64 @@
+import runtime;
+import ds/hashmap;
+
+export{
+	Configuration(marks : [Int], states : HashMap<Letter, IndependedState>);
+	IndependedOperatorVM : (operator : OpertatorAtom, marks : [Int]);
+	IndependedState : (value : ref Value);
+	State : (letter : Letter, value : ref Value);
+	Value ::= Int, Boolean, ArrayValue;
+	ArrayValue : (values : ref [Value]);
+
+	MarkSequence ::= Int, MarkNode;
+	Types ::= Int, Boolean, Type;
+	Variables ::= Variable, VariablesNode;
+	Operator ::= OpertatorAtom, Sequence, Nondeterministic, Iteration;
+	OpertatorAtom ::= Assignement, Condition, Print;
+	Expr ::= Arifm, Logic, ArrayExpr;
+	Arifm ::= Add, Sub, Mul, Div, Int, Letter, GetArr;
+	Logic ::= Boolean, More, Less, Equal, Or, And, Not, Xor, Letter, GetArr;
+	ArrayExpr ::= Letter, Array, GetArr, SetArr;
+	Elements ::= Int, Boolean, Letter, Array, ArrNode;
+	
+	ProgramVM : (declaration : Declaration, operators : [OperatorVM]);
+	OperatorVM : (mark : Int, operator : OpertatorAtom, markSet : MarkSet);
+	MarkSet : (markSequence : MarkSequence);
+	MarkNode : (left : MarkSequence, right : MarkSequence);
+	
+	Program : (declaration : Declaration, body : Operator);
+	
+	Declaration : (variables : Variables);
+	VariablesNode : (variable : Variable, variables : Variables);
+	Variable : (letter : Letter, type : Type);
+	Type : (type : Types);
+	
+	Assignement : (letter : Letter, expr : Expr);
+	Condition : (condition : Logic);
+	Print : (expr : Expr);
+	Sequence : (operator1 : Operator, operator2 : Operator);
+	Nondeterministic : (operator1 : Operator, operator2 : Operator);
+	Iteration : (operator : Operator);
+	
+	Int : (decimal : int);
+	Boolean : (boolean : int);
+	Letter : (letter : string);
+	Array : (elements : Elements);
+	ArrNode : (left : Elements, right : Elements);
+	
+	Add : (term1 : Arifm, term2 : Arifm);
+	Sub : (term1 : Arifm, term2 : Arifm);
+	Mul : (term1 : Arifm, term2 : Arifm);
+	Div : (term1 : Arifm, term2 : Arifm);
+	
+	More : (term1 : Arifm, term2 : Arifm);
+	Less : (term1 : Arifm, term2 : Arifm);
+	Equal : (term1 : Arifm, term2 : Arifm);
+	
+	Or : (term1 : Logic, term2 : Logic);
+	And : (term1 : Logic, term2 : Logic);
+	Xor : (term1 : Logic, term2 : Logic);
+	Not : (term : Logic);
+	
+	GetArr : (array : ArrayExpr, index : Arifm);
+	SetArr : (array : ArrayExpr, index : Arifm, expr : Expr);
+}

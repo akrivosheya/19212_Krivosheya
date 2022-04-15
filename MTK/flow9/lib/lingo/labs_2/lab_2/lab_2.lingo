@@ -1,0 +1,22 @@
+sum = term:t sum2:s { Node(:t, :s) } | term:t { :t } | brackets:b { :b };
+term = product:p { Ter("s", :p) } | brackets:b { Ter("s", :b) } | term2:t { :t };
+sum2 = term2:t sum2:s { Node(:t, :s) } | term2:t { :t };
+term2 = signTerm$s product:p { Ter($s, :p) } | signTerm$s brackets:b { Ter($s, :b) };
+
+product = mul:m product2:p { Node(:m, :p) } | mul:m { :m };
+mul2 = signMul$s power:p { Ter($s, :p) } | signMul$s brackets:b { Ter($s, :b) } | mul:m { :m };
+mul = power:p { Ter("m", :p) } | brackets:b { Ter("m", :b) };
+product2 = mul2:m product2:p { Node(:m, :p) } | mul2:m { :m };
+
+power = elem:e power2:p { Node(:e, :p) } | elem:e { :e };
+elem = atom:i { Ter("p", :i) } | brackets:b { Ter("p", :b) };
+power2 = elem2:e power2:p { Node(:e, :p) } | elem2:e { :e };
+elem2 = '^' atom:i { Ter("^", :i) } | '^' brackets:b { Ter("^", :b) };
+
+brackets = '(' sum:s ')' { Brackets(:s) };
+atom = int:i { :i } | letter:l { :l };
+int = digit+$d { Int(s2i($d)) };
+digit = '0'-'9';
+letter = 'A'-'Z'$s { Letter($s) } | 'a'-'z'$s { Letter($s) };
+signTerm = '+' | '-';
+signMul = '*' | '/';

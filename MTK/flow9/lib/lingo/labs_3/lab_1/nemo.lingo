@@ -1,0 +1,32 @@
+program = declaration:d ';' operator:o  { Program(:d, :o) };
+
+declaration = variables:v { Declaration(:v) };
+variables = variable:v1 ';' variables:v2 { VariablesNode(:v1, :v2) } | variable:v { :v };
+variable = "var " letter:l ':' type:t { Variable(:l, :t) };
+type = '[' type:t ']' { Type(Type(:t)) } | "int" { Type(Int(0)) } | "bool" { Type(Boolean(0)) };
+
+operator = '{' setOp:s  "}*" { Iteration(:s) } | operatoratom:o '*' { Iteration(:o) } | '{' setOp:s '}' { :s } | operatoratom:o { :o };
+setOp = operator:o ';' setOp:s { Sequence(:o, :s) } | operator:o 'U' setOp:n { Nondeterministic(:o, :n) } | operator:o { :o };
+operatoratom = letter:l ":=" expr:e { Assignement(:l, :e) } | logic:l '?' { Condition(:l) } | "print(" expr:e ')' { Print(:e) };
+
+expr = arrexpr:a { :a } | arifm:a { :a } | logic:l { :l };
+arifm = arifmatom:a { :a } | '(' arifm:e1 '+' arifmunsigned:e2 ')' { Add(:e1, :e2) } | '(' arifm:e1 '-' arifmunsigned:e2 ')' { Sub(:e1, :e2) } | '(' arifm:e1 '*' arifmunsigned:e2 ')' { Mul(:e1, :e2) } | '(' arifm:e1 '/' arifmunsigned:e2 ')' { Div(:e1, :e2) };
+arifmunsigned = arifmatomunsigned:a { :a } | '(' arifm:e1 '+' arifmunsigned:e2 ')' { Add(:e1, :e2) } | '(' arifm:e1 '-' arifmunsigned:e2 ')' { Sub(:e1, :e2) } | '(' arifm:e1 '*' arifmunsigned:e2 ')' { Mul(:e1, :e2) } | '(' arifm:e1 '/' arifmunsigned:e2 ')' { Div(:e1, :e2) };
+logic = logicatom:l { :l } | '(' logic:e1 '|' logic:e2 ')' { Or(:e1, :e2) } | '(' logic:e1 '&' logic:e2 ')' { And(:e1, :e2) } | '(' logic:e1 '^' logic:e2 ')' { Xor(:e1, :e2) } | '!'logic:e { Not(:e) } | compare:c { :c };
+compare = '(' arifm:e1 '<' arifm:e2 ')' { Less(:e1, :e2) } | '(' arifm:e1 '>' arifm:e2 ')' { More(:e1, :e2) } | '(' arifm:e1 '=' arifm:e2 ')' { Equal(:e1, :e2) };
+arrexpr = arrayatom:a { :a } | "get(" arrexpr:a ',' arifmunsigned:i ')' { GetArr(:a, :i) } | "set(" arrexpr:a ',' arifmunsigned:i ',' expr:e ')' { SetArr(:a, :i, :e) };
+
+arifmatom = int:i { :i } | lettersigned:l !letter { :l };
+arifmatomunsigned = intunsigned:i { :i } | letter:l !letter { :l };
+logicatom = boolean:b { :b } | letter:l !letter { :l };
+arrayatom = array:a { :a } | letter:l !letter{ :l };
+array = '[' elements:e ']' { Array(:e) };
+elements = atom:a ',' elements:i { ArrNode(:a, :i) } | atom:a { :a };
+atom = arifmatom:a { :a } | logicatom:l { :l } | arrayatom:a { :a };
+boolean = "true"$s { Boolean(1) } | "false"$s { Boolean(0) } ;
+int = (signTerm? digit+)$d { Int(s2i($d)) };
+intunsigned = digit+$d { Int(s2i($d)) };
+digit = '0'-'9';
+lettersigned = (signTerm? letter)$s { Letter($s) };
+letter = 'A'-'Z'$s { Letter($s) } | 'a'-'z'$s { Letter($s) };
+signTerm = '+' | '-';

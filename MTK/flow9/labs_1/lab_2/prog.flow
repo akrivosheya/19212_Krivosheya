@@ -1,0 +1,15 @@
+import runtime;
+
+arrayIntToSum : (arrayInt : [int]) -> int;
+
+main(){
+	arrayInt : [int] = [1, 1, 1, 1, 1];
+	sum : int = arrayIntToSum(arrayInt);
+	println(sum);
+	quit(0);
+}
+
+arrayIntToSum(arrayInt : [int]){
+	z = 3;
+	fold(arrayInt, 0, \x,y -> x + y + z);
+}

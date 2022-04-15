@@ -1,0 +1,127 @@
+346 isSameStructType$init
+399 flow$init
+413 flow
+428 flow$init
+433 redirectAdditionalFn$init
+463 redirectAdditionalFn$1
+484 redirectAdditionalFn
+490 fold$init
+519 extractStruct$init
+542 extractStruct
+566 extractStruct$1
+628 extractStruct
+644 extractStruct$init
+649 loggingEnabled$init
+671 securityModes$init
+695 isOWASPLevel1$init
+718 isOWASPLevel1
+758 isOWASPLevel1$init
+763 isLoggingEnabled$init
+789 isLoggingEnabled
+811 isLoggingEnabled$init
+816 println2$init
+852 localStorageEnabled$init
+879 println$init
+896 println
+938 println$init
+943 arrayIntToSum$init
+966 arrayIntToSum
+990 arrayIntToSum$1
+1011 arrayIntToSum
+1027 arrayIntToSum$init
+1032 main$init
+1046 main
+1122 main$init
+
+0 C:\Users\aleks\Documents\MKT\flow9\lib\ds\tuples.flow 7 1
+39 C:\Users\aleks\Documents\MKT\flow9\lib\ds\tuples.flow 3 1
+77 C:\Users\aleks\Documents\MKT\flow9\lib\ds\tuples.flow 5 1
+141 C:\Users\aleks\Documents\MKT\flow9\lib\ds\tuples.flow 4 1
+191 C:\Users\aleks\Documents\MKT\flow9\lib\dynamic.flow 10 2
+217 C:\Users\aleks\Documents\MKT\flow9\lib\maybe.flow 9 1
+234 C:\Users\aleks\Documents\MKT\flow9\lib\maybe.flow 10 1
+261 C:\Users\aleks\Documents\MKT\flow9\lib\ds\list.flow 11 2
+296 C:\Users\aleks\Documents\MKT\flow9\lib\ds\list.flow 9 2
+318 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 5 2
+346 C:\Users\aleks\Documents\MKT\flow9\lib\dynamic.flow 5 1
+399 C:\Users\aleks\Documents\MKT\flow9\lib\dynamic.flow 36 0
+413 C:\Users\aleks\Documents\MKT\flow9\lib\dynamic.flow 37 1
+422 C:\Users\aleks\Documents\MKT\flow9\lib\dynamic.flow 37 6
+427 C:\Users\aleks\Documents\MKT\flow9\lib\dynamic.flow 38 0
+458 C:\Users\aleks\Documents\MKT\flow9\lib\net\url.flow 25 68
+472 C:\Users\aleks\Documents\MKT\flow9\lib\net\url.flow 25 82
+477 C:\Users\aleks\Documents\MKT\flow9\lib\net\url.flow 25 82
+490 C:\Users\aleks\Documents\MKT\flow9\lib\ds\array.flow 36 1
+519 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 47 0
+542 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 1
+551 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 1
+556 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 9
+561 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 12
+575 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 37
+580 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 59
+585 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 37
+596 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 50 16
+601 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 50 16
+612 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 51 2
+622 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 52 8
+633 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 48 1
+643 C:\Users\aleks\Documents\MKT\flow9\lib\flowstructs.flow 53 0
+668 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 33 32
+689 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 17 41
+695 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 19 0
+718 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 20 1
+724 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 20 37
+734 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 20 1
+750 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 20 49
+757 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 21 0
+763 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 39 0
+789 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 40 1
+791 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 40 2
+804 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 40 22
+810 C:\Users\aleks\Documents\MKT\flow9\lib\securitymode.flow 41 0
+816 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 143 1
+876 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 374 37
+879 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 144 1
+896 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 145 2
+905 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 145 6
+916 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 146 3
+921 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 146 3
+936 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 145 2
+937 C:\Users\aleks\Documents\MKT\flow9\lib\runtime.flow 146 0
+943 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 11 0
+966 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 1
+975 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 1
+980 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 16
+985 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 20
+999 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 28
+1004 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 32
+1016 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 12 1
+1026 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 13 0
+1032 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 5 0
+1046 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 6 1
+1055 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 6 21
+1060 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 6 24
+1065 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 6 27
+1070 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 6 30
+1075 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 6 33
+1090 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 7 13
+1095 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 7 13
+1106 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 8 1
+1111 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 8 1
+1121 C:\Users\aleks\Documents\MKT\flow9\labs_1\lab_2\prog.flow 9 0
+1146 --end-- 0 -1
+
+L 413 1 0 i
+L 463 1 0 url
+L 463 1 1 fn
+L 542 1 0 a
+L 542 1 1 e
+L 566 0 2 t
+L 566 1 0 acc
+L 566 1 1 el
+L 896 1 0 str
+L 966 1 0 arrayInt
+L 990 1 0 x
+L 990 1 1 y
+L 1046 0 0 arrayInt
+L 1046 0 1 sum

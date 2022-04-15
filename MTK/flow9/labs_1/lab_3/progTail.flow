@@ -1,0 +1,38 @@
+import runtime;
+
+fib : (n : int) -> [int];
+fibTail : (n : int, array : [int]) -> [int];
+
+main(){
+	count : int = 9;
+	array : [int] = fib(count);
+	println(array);
+	quit(0);
+}
+
+fib(n : int){
+	if(n <= 0){
+		[];
+	} else {
+		if(n <= 2){
+			if(n == 1){
+				[0];
+			} else {
+				[0, 1];
+			}
+		} else {
+			fibTail(n - 2, [0, 1])
+		}
+	}
+}
+
+fibTail(n : int, array : [int]){
+	if(n <= 0){
+		array;
+	} else {
+		l : int = length(array);
+		lastElement : int = array[l - 1] + array[l - 2];
+		oneElement : [int] = [0];
+		fibTail(n - 1, concat(array, replace(oneElement, 0, lastElement)));
+	}
+}

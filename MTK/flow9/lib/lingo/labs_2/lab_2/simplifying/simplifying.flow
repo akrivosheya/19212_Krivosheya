@@ -1,0 +1,930 @@
+import runtime;
+import ds/vector;
+import lingo/labs_2/lab_2/structs;
+import lingo/labs_2/lab_2/simplifying/comparing;
+import math/math;
+
+export{
+	simplify(expr: Expr) -> Expr;
+	simplifySum(products : Vector<SignedProduct>) -> void;
+	simplifyDecomposedSum(exp : Sum) -> DecomposedExpr;
+	simplifyProduct(productWithSign : SignedProduct) -> void;
+	simplifyWithZeroMul(productWithSign : SignedProduct) -> bool;
+	simplifyWithZeroPower(signedProduct : SignedProduct, index : int) -> void;
+	simplifyWithNegativeDecimal(productWithSign : SignedProduct, index : int) -> void;
+	simplifyDecimals(productWithSign : SignedProduct, index : int) -> void;
+	add(sum1 : Sum, sum2 : Sum) -> DecomposedExpr;
+	canPower(base : int, power : int) -> bool;
+	makeSum(term : DecomposedExpr, sign : int) -> Sum;
+	multiplySameMuls(productWithSign : SignedProduct) -> void;
+	multiplyDecimals(mul1 : DecomposedExpr, mul2 : DecomposedExpr) -> Int;
+	multiplyDecimalsWithSamePowers(productWithSign : SignedProduct) -> void;
+	pushIntoProduct(product : Vector<Mul>, exp : DecomposedExpr) -> int;
+	removeZeros(products : Vector<SignedProduct>) -> void;
+	sumSameProducts(products : Vector<SignedProduct>, index : int) -> void;
+	takeOutCommonMuls(products : Vector<SignedProduct>, indexProduct : int, indexMul : int) -> void;
+	getAstTree(exp : DecomposedExpr, sequenceSum : bool, signProduct : int) -> Expr;
+	getAstSequencePowers(exp : DecomposedExpr, sign : int) -> Expr;
+	getAstSequenceProduct(product : Vector<Mul>, isFirstMuls : bool) -> Expr;
+	
+	decompose(expr: Expr) -> Vector<SignedProduct>;
+	decomposeSum(expr: Expr, decomposedSum : Vector<SignedProduct>, sign: int) -> void;
+	decomposeProduct(expr: Expr, decomposedProduct : Vector<Mul>, pow: Expr, powSign: int) -> bool;
+	makeProduct(mul1 : Expr, mul2 : Expr) -> Node;
+}
+
+simplify(expr: Expr){
+	decomposedSum : Vector<SignedProduct> = decompose(expr);
+	mapVector(decomposedSum, simplifyProduct);
+	simplifySum(decomposedSum);
+	newExpr = getAstTree(Sum(decomposedSum), false, 1);
+	switch(newExpr){
+		Brackets(expBrack) : {
+			expBrack;
+		}
+		Node(e1, e2) : {
+			newExpr;
+		}
+		Int(d) : {
+			newExpr;
+		}
+		Letter(l) : {
+			newExpr;
+		}
+		Ter(s, t) : {
+			newExpr;
+		}
+	}
+}
+
+simplifySum(products : Vector<SignedProduct>){
+	removeZeros(products);
+	if(sizeVector(products) > 1){
+		sumSameProducts(products, 0);
+	}
+	if(sizeVector(products) > 1){
+		takeOutCommonMuls(products, 0, 0);
+	}
+}
+
+simplifyProduct(productWithSign : SignedProduct){
+	max = sizeVector(productWithSign.product);
+	if(!simplifyWithZeroMul(productWithSign)){
+		simplifyWithZeroPower(productWithSign, 0);
+		simplifyWithNegativeDecimal(productWithSign, 0);
+		simplifyDecimals(productWithSign, 0);
+		multiplySameMuls(productWithSign);
+		multiplyDecimalsWithSamePowers(productWithSign);
+	}
+}
+
+simplifyWithZeroMul(productWithSign : SignedProduct){
+	max = sizeVector(productWithSign.product);
+	if(findSameMul(productWithSign.product, Mul(Int(0), Int(1), 1), 0, max, true, true, false, false) != max){
+		clearVector(productWithSign.product);
+		pushVector(productWithSign.product, Mul(Int(0), Int(1), 1));
+		true;
+	}
+	else{
+		false;
+	}
+}
+
+removeZeros(products : Vector<SignedProduct>){
+	max = sizeVector(products);
+	if(max != 1){
+		zeroProduct : Vector<Mul> = makeVector(10);
+		pushVector(zeroProduct, Mul(Int(0), Int(1), 1));
+		zeroSignedProduct = SignedProduct(ref 1, zeroProduct);
+		zeroIndex = findSameProduct(products, zeroSignedProduct, 0, max, false, true);
+		if(zeroIndex != max){
+			removeVector(products, zeroIndex);
+			removeZeros(products);
+		}
+	}
+}
+
+sumSameProducts(products : Vector<SignedProduct>, index : int){
+	max = sizeVector(products);
+	product1 = getVectorUnsafe(products, index);
+	sameProductIndex = findSameProduct(products, product1, index + 1, max, false, true);
+	if(sameProductIndex != max){
+		product2 = getVectorUnsafe(products, sameProductIndex);
+		if(^(product1.sign) != ^(product2.sign)){
+			removeVector(products, sameProductIndex);
+			removeVector(products, index);
+			if(sizeVector(products) == 0){
+				newProduct : Vector<Mul> = makeVector(1);
+				pushVector(newProduct, Mul(Int(0), Int(1), 1));
+				newSignedProduct = SignedProduct(ref 1, newProduct);
+				pushVector(products, newSignedProduct);
+			}
+			else{
+				sumSameProducts(products, 0);
+			}
+		}
+		else{
+			removeVector(products, sameProductIndex);
+			pushVector(product1.product, Mul(Int(2), Int(1), 1));
+			simplifyProduct(product1);
+			if(sizeVector(products) > 1){
+				sumSameProducts(products, 0);
+			}
+		}
+	}
+	else{
+		if(index < max - 2){
+			sumSameProducts(products, index + 1);
+		}
+	}
+}
+
+takeOutCommonMuls(products : Vector<SignedProduct>, indexProduct : int, indexMul : int){
+	maxProducts = sizeVector(products);
+	product1 = getVectorUnsafe(products, indexProduct);
+	maxMuls = sizeVector(product1.product);
+	letterIndex1 = findSameMul(product1.product, Mul(Letter("a"), Int(1), 1), indexMul, maxMuls, false, true, false, false);
+	if(letterIndex1 != maxMuls){
+		letter1 = getVectorUnsafe(product1.product, letterIndex1);
+		decomposedProduct1 : Vector<Mul> = makeVector(1);
+		pushVector(decomposedProduct1, letter1);
+		signedProduct1 = SignedProduct(ref 1, decomposedProduct1);
+		productIndex2 = findSameProduct(products, signedProduct1, indexProduct + 1, maxProducts, false, false);
+		if(productIndex2 != maxProducts){
+			product2 = getVectorUnsafe(products, productIndex2);
+			letterIndex2 = findSameMul(product2.product, letter1, 0, sizeVector(product2.product), true, true, true, true);
+			removeVector(products, productIndex2);
+			removeVector(products, indexProduct);
+			newProduct : Vector<Mul> = makeVector(2);
+			pushVector(newProduct, letter1);
+			removeVector(product1.product, letterIndex1);
+			if(sizeVector(product1.product) == 0){
+				pushVector(product1.product, Mul(Int(1), Int(1), 1));
+			}
+			removeVector(product2.product, letterIndex2);
+			if(sizeVector(product2.product) == 0){
+				pushVector(product2.product, Mul(Int(1), Int(1), 1));
+			}
+			newSum = add(makeSum(product1, ^(product1.sign)), makeSum(product2, ^(product2.sign)));
+			newSign = pushIntoProduct(newProduct, newSum);
+			newSignedProduct = SignedProduct(ref newSign, newProduct);
+			simplifyProduct(newSignedProduct);
+			pushVector(products, newSignedProduct);
+			simplifySum(products);
+		}
+		else if(letterIndex1 < maxMuls - 1){
+			takeOutCommonMuls(products, indexProduct, letterIndex1 + 1);
+		}
+		else{
+			if(indexProduct < maxProducts - 2){
+				takeOutCommonMuls(products, indexProduct + 1, 0);
+			}
+		}
+	}
+	else{
+		if(indexProduct < maxProducts - 2){
+			takeOutCommonMuls(products, indexProduct + 1, 0);
+		}
+	}
+}
+
+pushIntoProduct(product : Vector<Mul>, exp : DecomposedExpr){
+	switch(exp : DecomposedExpr){
+		SignedProduct(sign1, product1) : {
+			appendVector(product, product1);
+			^sign1;
+		}
+		Sum(sum1) : {
+			pushVector(product, Mul(exp, Int(1), 1));
+			1;
+		}
+		Int(dec) : {
+			pushVector(product, Mul(exp, Int(1), 1));
+			1;
+		}
+		Letter(letter) : {
+			pushVector(product, Mul(exp, Int(1), 1));
+			1;
+		}
+	}
+}
+
+simplifyDecomposedSum(exp1 : Sum){
+	sum = exp1.sum;
+	if(sizeVector(sum) == 1){
+		productWithSign = getVectorUnsafe(sum, 0);
+		if(sizeVector(productWithSign.product) == 1 && ^(productWithSign.sign) == 1){
+			mul = getVectorUnsafe(productWithSign.product, 0);
+			switch(mul.base){
+				Sum(sum2) : {
+					if(isInt(mul.pow) && getInt(mul.pow) == 1){
+						mul.base;
+					}
+					else{
+						productWithSign;
+					}
+				}
+				SignedProduct(sign1, product) : {
+					exp1;
+				}
+				Int(dec) : {
+					if(isInt(mul.pow) && canPower(dec, getInt(mul.pow))){
+						Int(pow(dec, getInt(mul.pow)));
+					}
+					else{
+						productWithSign;
+					}
+				}
+				Letter(letter) : {
+					if(isInt(mul.pow) && getInt(mul.pow) == 1){
+						mul.base;
+					}
+					else{
+						productWithSign;
+					}
+				}
+			}
+		}
+		else{
+			productWithSign;
+		}
+	}
+	else{
+		exp1;
+	}
+}
+
+simplifyWithNegativeDecimal(productWithSign : SignedProduct, index : int){
+	max = sizeVector(productWithSign.product);
+	negativeOneIndex = findSameMul(productWithSign.product, Mul(Int(-1), Int(1), 1), index, max, true, true, false, false);
+	if(negativeOneIndex != max){
+		negativeOne = getVectorUnsafe(productWithSign.product, negativeOneIndex);
+		if(isInt(negativeOne.pow) && canPower(-1, getInt(negativeOne.pow))){
+			removeVector(productWithSign.product, negativeOneIndex);
+			newSign = ^(productWithSign.sign) * pow(-1, getInt(negativeOne.pow));
+			productWithSign.sign := newSign;
+			pushVector(productWithSign.product, Mul(Int(pow(1, getInt(negativeOne.pow))), Int(1), negativeOne.powSign));
+			simplifyWithNegativeDecimal(productWithSign, 0);
+		}
+		else{
+		}
+	}
+}
+
+simplifyDecimals(productWithSign: SignedProduct, index : int){
+	max = sizeVector(productWithSign.product);
+	decimalIndex = findSameMul(productWithSign.product, Mul(Int(1), Int(1), 1), index, max, false, true, false, false);
+	if(decimalIndex != max){
+		decimal = getVectorUnsafe(productWithSign.product, decimalIndex);
+		if(isInt(decimal.base) && getInt(decimal.base) == 1){
+			removeVector(productWithSign.product, decimalIndex);
+			if(sizeVector(productWithSign.product) == 0){
+				pushVector(productWithSign.product, Mul(Int(1), Int(1), 1));
+			}
+			else{
+				simplifyDecimals(productWithSign, 0);
+			}
+		}
+		else if(isInt(decimal.pow) && canPower(getInt(decimal.base), getInt(decimal.pow)) && getInt(decimal.pow) != 1){
+			removeVector(productWithSign.product, decimalIndex);
+			pushVector(productWithSign.product, Mul(Int(pow(getInt(decimal.base), getInt(decimal.pow))), Int(1), decimal.powSign));
+			simplifyDecimals(productWithSign, 0);
+		}
+		else{
+			if(index < max - 1){
+				simplifyDecimals(productWithSign, index + 1);
+			}
+		}
+	}
+}
+
+simplifyWithZeroPower(productWithSign : SignedProduct, index : int){
+	max = sizeVector(productWithSign.product);
+	decimalIndex = findSameMul(productWithSign.product, Mul(Int(1), Int(0), 1), index, max, false, false, false, true);
+	if(decimalIndex != max){
+		removeVector(productWithSign.product, decimalIndex);
+		pushVector(productWithSign.product, Mul(Int(1), Int(1), 1));
+		simplifyWithZeroPower(productWithSign, 0);
+	}
+	else{
+		if(index < max - 1){
+			simplifyWithZeroPower(productWithSign, index + 1);
+		}
+	}
+}
+
+multiplySameMuls(productWithSign: SignedProduct){
+	max = sizeVector(productWithSign.product);
+	sameMuls = foldiVector(productWithSign.product, [max, max], \index,pair,mul -> {
+		if(index < max - 1){
+			foundMul = findSameMul(productWithSign.product, mul, index + 1, max, true, true, false, false);
+			if(foundMul != max && pair[0] == max){
+				[index, foundMul];
+			}
+			else{
+				pair;
+			}
+		}
+		else{
+			pair;
+		}
+	});
+	if(sameMuls[0] != max){
+		mul1 = getVectorUnsafe(productWithSign.product, sameMuls[0]);
+		mul2 = getVectorUnsafe(productWithSign.product, sameMuls[1]);
+		newPow = add(makeSum(mul1.pow, mul1.powSign), makeSum(mul2.pow, mul2.powSign));
+		removeVector(productWithSign.product, sameMuls[1]);
+		removeVector(productWithSign.product, sameMuls[0]);
+		pushVector(productWithSign.product, Mul(mul1.base, newPow, 1));
+		simplifyProduct(productWithSign);
+	}
+}
+
+multiplyDecimalsWithSamePowers(productWithSign: SignedProduct){
+	max = sizeVector(productWithSign.product);
+	sameMuls = foldiVector(productWithSign.product, [max, max], \index,pair,mul -> {
+		if(index < max - 1 && 
+		sameMul(getVectorUnsafe(productWithSign.product, index), Mul(Int(1), Int(1), 1), false, true, true, true)){
+			foundMul = findSameMul(productWithSign.product, mul, index + 1, max, false, true, true, true);
+			if(foundMul != max && pair[0] == max){
+				[index, foundMul];
+			}
+			else{
+				pair;
+			}
+		}
+		else{
+			pair;
+		}
+	});
+	if(sameMuls[0] != max){
+		mul1 = getVectorUnsafe(productWithSign.product, sameMuls[0]);
+		mul2 = getVectorUnsafe(productWithSign.product, sameMuls[1]);
+		newBase = multiplyDecimals(mul1.base, mul2.base);
+		removeVector(productWithSign.product, sameMuls[1]);
+		removeVector(productWithSign.product, sameMuls[0]);
+		pushVector(productWithSign.product, Mul(newBase, mul1.pow, mul1.powSign));
+		simplifyProduct(productWithSign);
+	}
+}
+
+canPower(base : int, power : int){
+	(i2d(pow(base, power)) == dpow(i2d(base), i2d(power)));
+}
+
+multiplyDecimals(mul1 : DecomposedExpr, mul2 : DecomposedExpr){
+	switch(mul1 : DecomposedExpr){
+		Int(dec1) : {
+			switch(mul2){
+				Int(dec2) : {
+					Int((dec1 * dec2));
+				}
+				SignedProduct(s, p) : {
+					Int(0);
+				}
+				Sum(s) : {
+					Int(0);
+				}
+				Letter(l) : {
+					Int(0);
+				}
+			}
+		}
+		SignedProduct(s, p) : {
+			Int(0);
+		}
+		Sum(s) : {
+			Int(0);
+		}
+		Letter(l) : {
+			Int(0);
+		}
+	}
+}
+
+add(sum1 : Sum, sum2 : Sum){
+	appendVector(sum1.sum, sum2.sum);
+	simplifySum(sum1.sum);
+	simplifyDecomposedSum(sum1);
+}
+
+makeSum(term : DecomposedExpr, sign : int){
+	switch(term : DecomposedExpr){
+		SignedProduct(sign1, product) : {
+			decomposedSum : Vector<SignedProduct> = makeVector(10);
+			pushVector(decomposedSum, term);
+			Sum(decomposedSum);
+		}
+		Sum(sum1) : {
+			mapVector(sum1, \signedProduct -> {
+				newSign = ^(signedProduct.sign) * sign;
+				signedProduct.sign := newSign;
+			});
+			Sum(sum1);
+		}
+		Int(dec) : {
+			decomposedProduct : Vector<Mul> = makeVector(10);
+			mul = Mul(term, Int(1), 1);
+			pushVector(decomposedProduct, mul);
+			decomposedSum : Vector<SignedProduct> = makeVector(10);
+			pushVector(decomposedSum, SignedProduct(ref sign, decomposedProduct));
+			Sum(decomposedSum);
+		}
+		Letter(letter) : {
+			decomposedProduct : Vector<Mul> = makeVector(10);
+			mul = Mul(term, Int(1), 1);
+			pushVector(decomposedProduct, mul);
+			decomposedSum : Vector<SignedProduct> = makeVector(10);
+			pushVector(decomposedSum, SignedProduct(ref sign, decomposedProduct));
+			Sum(decomposedSum);
+		}
+	}
+}
+
+getAstTree(exp : DecomposedExpr, sequenceSum : bool, signProduct : int){
+	switch(exp : DecomposedExpr){
+		Sum(products) : {
+			countProducts = sizeVector(products);
+			if(countProducts == 1){
+				signedProduct = getVectorUnsafe(products, 0);
+				getAstTree(signedProduct, sequenceSum, signProduct);
+			}
+			else{
+				newExp1 = getAstTree(getVectorUnsafe(products, 0), sequenceSum, signProduct);
+				exp1 = 
+					switch(newExp1){			
+						Brackets(expBrack) : {
+							expBrack;
+						}
+						Node(e1, e2) : {
+							newExp1;
+						}
+						Int(d) : {
+							newExp1;
+						}
+						Letter(l) : {
+							newExp1;
+						}
+						Ter(s, t) : {
+							newExp1;
+						}
+					}
+				removeVector(products, 0);
+				newExp2 = getAstTree(exp, true, signProduct);
+				exp2 = 
+					switch(newExp2){
+						Brackets(expBrack) : {
+							expBrack;
+						}
+						Node(e1, e2) : {
+							newExp2;
+						}
+						Int(d) : {
+							newExp2;
+						}
+						Letter(l) : {
+							newExp2;
+						}
+						Ter(s, t) : {
+							newExp2;
+						}
+					}
+				Brackets(Node(exp1, exp2));
+			}
+		}
+		SignedProduct(sign1, product) : {
+			signSymb = 
+				if(^sign1 * signProduct == 1){
+					if(sequenceSum){
+						"+"
+					}
+					else{
+						"s";
+					}
+				}
+				else{
+					"-";
+				}
+			if(sizeVector(product) == 1){
+				mul = getVectorUnsafe(product, 0);
+				term = 
+					if(isInt(mul.pow) && getInt(mul.pow) == 1 && mul.powSign == 1){
+						Ter("m", Ter("p", getAstTree(mul.base, false, mul.powSign)));
+					}
+					else{
+						Ter("m", Node(Ter("p", getAstTree(mul.base, false, 1)), 
+						getAstSequencePowers(mul.pow, mul.powSign)));
+					}
+				Brackets(Ter(signSymb, term));
+			}
+			else{
+				Brackets(Ter(signSymb, getAstSequenceProduct(product, true)));
+			}
+		}
+		Int(dec) : {
+			if(dec * signProduct < 0){
+				Brackets(Int(dec * signProduct));
+			}
+			else{
+				Int(dec * signProduct);
+			}
+		}
+		Letter(letter) : {
+			if(signProduct < 0){
+				Brackets(Ter("-", Ter("m", Ter("p", Letter(letter)))));
+			}
+			else{
+				Letter(letter);
+			}
+		}
+	}
+}
+
+getAstSequencePowers(exp : DecomposedExpr, sign : int){
+			println(exp);
+	switch(exp : DecomposedExpr){
+		Sum(sum1) : {
+			Ter("^", getAstTree(exp, false, sign));
+		}
+		SignedProduct(sign1, product) : {
+			if(sizeVector(product) == 1){
+				mul = getVectorUnsafe(product, 0);
+				if(isInt(mul.pow) && getInt(mul.pow) == 1 && mul.powSign == 1){
+					Ter("^", getAstTree(mul.base, false, sign * ^sign1));
+				}
+				else{
+					Node(Ter("^", getAstTree(mul.base, false, sign * ^sign1)), getAstSequencePowers(mul.pow, mul.powSign));
+				}
+			}
+			else{
+				Ter("^", getAstTree(exp, false, sign * ^sign1));
+			}
+		}
+		Int(dec) : {
+			if(sign < 0){
+				Ter("^", Brackets(Ter("-", Ter("m", Ter("p", exp)))));
+			}
+			else{
+				Ter("^", exp);
+			}
+		}
+		Letter(letter) : {
+			if(sign < 0){
+				Ter("^", Brackets(Ter("-", Ter("m", Ter("p", exp)))));
+			}
+			else{
+				Ter("^", exp);
+			}
+		}
+	}
+}
+
+getAstSequenceProduct(product : Vector<Mul>, isFirstMuls : bool){
+	signSymb = 
+		if(isFirstMuls){
+			"m";
+		}
+		else{
+			"*";
+		}
+	if(sizeVector(product) == 1){
+		mul = getVectorUnsafe(product, 0);
+		newExp1 = getAstTree(mul.base, false, 1);
+		exp1 = 
+			switch(newExp1){			
+				Brackets(expBrack) : {
+					expBrack;
+				}
+				Node(e1, e2) : {
+					newExp1;
+				}
+				Int(d) : {
+					newExp1;
+				}
+				Letter(l) : {
+					newExp1;
+				}
+				Ter(s, t) : {
+					newExp1;
+				}
+			}
+		term = 
+			if(isInt(mul.pow) && getInt(mul.pow) == 1 && mul.powSign == 1){
+				Ter("p", exp1);
+			}
+			else{
+				Node(Ter("p", exp1), 
+				getAstSequencePowers(mul.pow, mul.powSign));
+			}
+		Ter(signSymb, term);
+	}
+	else{
+		mul = getVectorUnsafe(product, 0);
+		removeVector(product, 0);
+		if(isInt(mul.base) && getInt(mul.base) == 1){
+			getAstSequenceProduct(product, false);
+		}
+		else{
+			newExp1 = getAstTree(mul.base, false, 1);
+			exp1 = 
+			switch(newExp1){			
+				Brackets(expBrack) : {
+					expBrack;
+				}
+				Node(e1, e2) : {
+					newExp1;
+				}
+				Int(d) : {
+					newExp1;
+				}
+				Letter(l) : {
+					newExp1;
+				}
+				Ter(s, t) : {
+					newExp1;
+				}
+			}
+			term = 
+				if(isInt(mul.pow) && getInt(mul.pow) == 1 && mul.powSign == 1){
+					Ter("p", exp1);
+				}
+				else{
+					Node(Ter("p", exp1), 
+					getAstSequencePowers(mul.pow, mul.powSign));
+				}
+			Node(Ter(signSymb, term), getAstSequenceProduct(product, false));
+		}
+	}
+}
+
+decompose(expr: Expr){
+	decomposedSum : Vector<SignedProduct> = makeVector(10);
+	decomposeSum(expr, decomposedSum, 1);
+	decomposedSum;
+}
+
+decomposeSum(expr: Expr, decomposedSum : Vector<SignedProduct>, sign: int){
+	switch(expr){
+		Ter(signTer, ter) : {
+			if(signTer == "-"){
+				decomposeSum(ter, decomposedSum, (-1) * sign);
+			}
+			else{
+				decomposeSum(ter, decomposedSum, sign);
+			}
+		}
+		Node(exp1, exp2) : {
+			switch(exp1){
+				Ter(symb, el) : {
+					if(symb == "s" || symb == "+" || symb == "-"){
+						decomposeSum(exp1, decomposedSum, sign);
+						decomposeSum(exp2, decomposedSum, sign);
+					} else if(symb == "m" || symb == "*" || symb == "/" || symb == "p"){
+						decomposedProduct : Vector<Mul> = makeVector(10);
+						successDecomposing = decomposeProduct(expr, decomposedProduct, Ter("p", Int(1)), 1);
+						if(!successDecomposing){
+							clearVector(decomposedSum);
+						}
+						pushVector(decomposedSum, SignedProduct(ref sign, decomposedProduct));
+					} else {
+						clearVector(decomposedSum);
+					}
+				}
+				Node(exp11, exp22) : {
+					clearVector(decomposedSum);
+				}
+				Brackets(expBracket) : {
+					clearVector(decomposedSum);
+				}
+				Int(dec) : {
+					clearVector(decomposedSum);
+				}
+				Letter(letter) : {
+					clearVector(decomposedSum);
+				}
+			}
+		}
+		Brackets(exp3) : {
+			decomposeSum(exp3, decomposedSum, sign);
+		}
+		Int(dec) : {
+			mul = Mul(Int(dec), Int(1), 1);
+			product : Vector<Mul> = makeVector(1);
+			pushVector(product, mul);
+			pushVector(decomposedSum, SignedProduct(ref sign, product));
+		}
+		Letter(letter) : {
+			mul = Mul(Letter(letter), Int(1), 1);
+			product : Vector<Mul> = makeVector(1);
+			pushVector(product, mul);
+			pushVector(decomposedSum, SignedProduct(ref sign, product));
+		}
+	}
+}
+
+decomposeProduct(expr: Expr, decomposedProduct : Vector<Mul>, pow: Expr, powSign: int){
+	switch(expr){
+		Ter(signTer, ter) : {
+			if(signTer == "/"){
+				decomposeProduct(ter, decomposedProduct, pow, (-1) * powSign);
+			}
+			else{
+				decomposeProduct(ter, decomposedProduct, pow, powSign);
+			}
+		}
+		Node(exp1, exp2) : {
+			switch(exp1){
+				Ter(symb, el) : {
+					if(symb == "m" || symb == "*" || symb == "/"){
+						decomposeProduct(exp1, decomposedProduct, pow, powSign) && 
+							decomposeProduct(exp2, decomposedProduct, pow, powSign);
+					} else if(symb == "p" || symb == "^"){
+						newPow : Expr = makeProduct(pow, exp2);
+						decomposeProduct(exp1, decomposedProduct, newPow, powSign);
+					} else {
+						clearVector(decomposedProduct);
+						false;
+					}
+				}
+				Node(other1, other2) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+				Brackets(expBracket) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+				Int(d) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+				Letter(letter) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+			}
+		}
+		Brackets(expBrack) : {
+			switch(expBrack){
+				Ter(signTer, ter) : {
+					if(signTer == "-"){
+						decomposeProduct(ter, decomposedProduct, pow, powSign) &&
+							decomposeProduct(Int(-1), decomposedProduct, pow, powSign);
+					}
+					else{
+						decomposeProduct(ter, decomposedProduct, pow, powSign);
+					}
+				}
+				Node(exp1, exp2) : {
+					decomposedPow : DecomposedExpr = switch(pow : Expr){
+						Ter(signTer, ter) : {
+							switch(ter : Expr){
+								Ter(s1, t1) : {
+									clearVector(decomposedProduct);
+									Int(0);
+								}
+								Node(e1, e2) : {
+									clearVector(decomposedProduct);
+									Int(0);
+								}
+								Brackets(b) : {
+									clearVector(decomposedProduct);
+									Int(0);
+								}
+								Int(d) : {
+									Int(d);
+								}
+								Letter(l) : {
+									Letter(l);
+								}
+							}
+						}
+						Node(exp3, exp4) : {
+							simplifyDecomposedSum(Sum(decompose(simplify(pow))));
+						}
+						Brackets(expBracket) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Int(d) : {
+							clearVector(decomposedProduct);
+							Int(d);
+						}
+						Letter(letter) : {
+							clearVector(decomposedProduct);
+							Letter(letter);
+						}
+					}
+					simplifyedSum = simplifyDecomposedSum(Sum(decompose(simplify(expBrack))));
+					mul = Mul(simplifyedSum, decomposedPow, powSign);
+					pushVector(decomposedProduct, mul);
+					true;
+				}
+				Brackets(expBracket) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+				Int(d) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+				Letter(letter) : {
+					clearVector(decomposedProduct);
+					false;
+				}
+			}
+		}
+		Int(d) : {
+			decomposedPow : DecomposedExpr = switch(pow : Expr){
+				Ter(s, ter) : {
+					switch(ter : Expr){
+						Ter(s1, t1) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Node(e1, e2) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Brackets(b) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Int(d1) : {
+							Int(d1);
+						}
+						Letter(l) : {
+							Letter(l);
+						}
+					}
+				}
+				Node(exp1, exp2) : {
+					simplifyDecomposedSum(Sum(decompose(simplify(pow))));
+				}
+				Brackets(expBracket) : {
+					clearVector(decomposedProduct);
+					Int(0);
+				}
+				Int(d1) : {
+					clearVector(decomposedProduct);
+					Int(0);
+				}
+				Letter(letter) : {
+					clearVector(decomposedProduct);
+					Int(0);
+				}
+			}
+			mul = Mul(Int(d), decomposedPow, powSign);
+			pushVector(decomposedProduct, mul);
+			true;
+		}
+		Letter(letter) : {
+			decomposedPow : DecomposedExpr = switch(pow : Expr){
+				Ter(s, ter) : {
+					switch(ter : Expr){
+						Ter(s1, t1) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Node(e1, e2) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Brackets(b) : {
+							clearVector(decomposedProduct);
+							Int(0);
+						}
+						Int(d) : {
+							Int(d);
+						}
+						Letter(l) : {
+							Letter(l);
+						}
+					}
+				}
+				Node(exp1, exp2) : {
+					simplifyDecomposedSum(Sum(decompose(simplify(pow))));
+				}
+				Brackets(expBracket) : {
+					clearVector(decomposedProduct);
+					Int(0);
+				}
+				Int(d) : {
+					clearVector(decomposedProduct);
+					Int(0);
+				}
+				Letter(l) : {
+					clearVector(decomposedProduct);
+					Int(0);
+				}
+			}
+			mul = Mul(Letter(letter), decomposedPow, powSign);
+			pushVector(decomposedProduct, mul);
+			true;
+		}
+	}
+}
+
+makeProduct(mul1 : Expr, mul2 : Expr){
+	Node(Ter("m", mul1), Ter("m", mul2));
+}

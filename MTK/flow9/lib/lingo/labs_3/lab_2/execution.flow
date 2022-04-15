@@ -1,0 +1,1089 @@
+import runtime;
+import lingo/labs_3/lab_2/structs;
+import ds/hashmap;
+
+export{
+	arrayStatesToMapStates(states : [State], statesMap : HashMap<Letter, IndependedState>) -> int;
+	arrayOperatorsToMapOperators(operators : [OperatorVM], operatorsMap : HashMap<Int, IndependedOperatorVM>) -> bool;
+	assign(letter : Letter, expr : Expr, states : HashMap<Letter, IndependedState>) -> bool;
+	containsLetter(states : [State], letter : Letter) -> bool;
+	execute(program : ProgramVM) -> void;
+	executeConfigurations(configurations : [Configuration], operators : HashMap<Int, IndependedOperatorVM>) -> void;
+	executeOperators(mark : [Int], states : HashMap<Letter, IndependedState>, operators : HashMap<Int, IndependedOperatorVM>) -> [Configuration];
+	executeOperator(operator : IndependedOperatorVM, states : HashMap<Letter, IndependedState>) -> [Configuration];
+	getArray(type : Types) -> [Value];
+	getBeginningStates(variables : Variables) -> [State];
+	getState(letter : Letter, type : Types) -> [State];
+	hashLetter(key : Letter) -> int;
+	hashInt(key : Int) -> int;
+}
+
+execute(program : ProgramVM){
+	states : [State] = getBeginningStates(program.declaration.variables);
+	statesMap : HashMap<Letter, IndependedState> = makeHashMap(hashLetter);
+	arrayStatesToMapStates(states, statesMap);
+	operatorsMap : HashMap<Int, IndependedOperatorVM> = makeHashMap(hashInt);
+	arrayOperatorsToMapOperators(program.operators, operatorsMap);
+	startingConfiguration = Configuration([Int(0)], statesMap);
+	executeConfigurations([startingConfiguration], operatorsMap);
+}
+
+executeConfigurations(inputConfigurations : [Configuration], operators : HashMap<Int, IndependedOperatorVM>){
+	newConfigurations = fold(inputConfigurations, [], \configurations,configuration -> {
+		if(length(configurations) == 1 && configurations[0].marks[0].decimal < 0){
+			configurations;
+		}
+		else{
+			nextConfigurations = executeOperators(configuration.marks, configuration.states, operators);
+			if(length(nextConfigurations) == 1 && nextConfigurations[0].marks[0].decimal < 0){
+				nextConfigurations;
+			}
+			else{
+				concat(configurations, nextConfigurations);
+			}
+		}
+	});
+	if(length(newConfigurations) > 0 && newConfigurations[0].marks[0].decimal >= 0){
+		executeConfigurations(newConfigurations, operators);
+	}
+}
+
+executeOperators(marks : [Int], states : HashMap<Letter, IndependedState>, operators : HashMap<Int, IndependedOperatorVM>){
+	fold(marks, [], \configurations,mark -> {
+		if(containsKeyHashMap(operators, mark)){
+			if(length(configurations) == 1 && configurations[0].marks[0].decimal < 0){
+				configurations;
+			}
+			else{
+				maybeOperator = lookupHashMap(operators, mark);
+				switch(maybeOperator){
+					None() : {
+						println(mark);
+						println("Can't find operator");
+						configurations;
+					}
+					Some(operator) : {
+						newConfigurations = executeOperator(operator, states);
+						if(length(newConfigurations) == 1 && newConfigurations[0].marks[0].decimal < 0){
+							println("Program error. Stop executing");
+							newConfigurations;
+						}
+						else{
+							concat(configurations, newConfigurations);
+						}
+					}
+				}
+			}
+		}
+		else{
+			configurations;
+		}
+	});
+}
+
+arrayToString(arrayValue : ArrayValue){
+	"[" + foldi(^(arrayValue.values), "", \index,text,value -> {
+		if(index == 0){
+			text;
+		}
+		else{
+			newText = switch(value){
+				Int(decimal) : {
+					text + i2s(decimal);
+				}
+				Boolean(boolean) : {
+					text + if(boolean == 1){
+						"true";
+					}
+					else{
+						"false";
+					}
+				}
+				ArrayValue(innerValues) : {
+					text + arrayToString(ArrayValue(innerValues));
+				}
+			};
+			if(index != length(^(arrayValue.values)) - 1){
+				newText + ",";
+			}
+			else{
+				newText;
+			}
+		}
+	}) + "]";
+}
+
+executeOperator(operator : IndependedOperatorVM, states : HashMap<Letter, IndependedState>){
+	switch(operator.operator){
+		Assignement(letter, expr) : {
+			successAssign = assign(letter, expr, states);
+			if(successAssign){
+				[Configuration(operator.marks, states)];
+			}
+			else{
+				[Configuration([Int(-1)], states)];
+			}
+		}
+		Condition(condition) : {
+			value : ref Boolean = ref Boolean(0);
+			if(getLogicValue(condition, states, value)){
+				if((^value).boolean == 1){
+					[Configuration(operator.marks, states)];
+				}
+				else{
+					[];
+				}
+			}
+			else{
+				[Configuration([Int(-1)], states)];
+			}
+		}
+		Print(expr) : {
+			value : ref Value = ref Int(0);
+			if(getValue(expr, states, value)){
+				switch(^value){
+					Int(decimal) : {
+						println(decimal);
+					}
+					Boolean(boolean) : {
+						println(
+							if(boolean == 1){
+								true;
+							}
+							else{
+								false;
+							}
+						);
+					}
+					ArrayValue(values) : {
+						println(arrayToString(ArrayValue(values)));
+					}
+				};
+				[Configuration(operator.marks, states)];
+			}
+			else{
+				[Configuration([Int(-1)], states)];
+			}
+		}
+	}
+}
+
+getLetterValue(letter : Letter, states : HashMap<Letter, IndependedState>, value : ref Value){
+	if(containsKeyHashMap(states, letter)){
+		maybeLetterState = lookupHashMap(states, letter);
+		switch(maybeLetterState){
+			None() : {
+				println("Expr error:");
+				println(letter);
+				println("Is not declarated");
+				false;
+			}
+			Some(letterState) : {
+				value := ^(letterState.value);
+				true;
+			}
+		}
+	}
+	else{
+		println("Expr error:");
+		println(letter);
+		println("Is not declarated");
+		false;
+	}
+}
+
+sameType(firstValue : Value, secondValue : Value){
+	switch(firstValue){
+		Int(firstDecimale) : {
+			switch(secondValue){
+				Int(secondDecimal) : {
+					true;
+				}
+				Boolean(secondBool) : {
+					false;
+				}
+				ArrayValue(secondElements) : {
+					false;
+				}
+			}
+		}
+		Boolean(firstBool) : {
+			switch(secondValue){
+				Int(secondDecimal) : {
+					false;
+				}
+				Boolean(secondBool) : {
+					true;
+				}
+				ArrayValue(secondElements) : {
+					false;
+				}
+			}
+		}
+		ArrayValue(firstElements) : {
+			switch(secondValue){
+				Int(secondDecimal) : {
+					false;
+				}
+				Boolean(secondBool) : {
+					false;
+				}
+				ArrayValue(secondElements) : {
+					sameType((^firstElements)[0], (^secondElements)[0]);
+				}
+			}
+		}
+	}
+}
+
+insertArrayValue(arrayValue : ArrayValue, index : int, value : Value, newArray : ref ArrayValue){
+	if(sameType(((^(arrayValue.values)))[0], value)){
+		newArray := ArrayValue(ref insertArray(removeIndex(^(arrayValue.values), index), index, value));
+		true;
+	}
+	else{
+		false;
+	}
+}
+
+getArrayValue(arrayExpr : ArrayExpr, states : HashMap<Letter, IndependedState>, newValue : ref ArrayValue){
+	switch(arrayExpr){
+		Letter(letter) : {
+			letterValue : ref Value = ref Int(0);
+			if(getLetterValue(Letter(letter), states, letterValue)){
+				switch(^letterValue){
+					Int(decimal) : {
+						false
+					}
+					Boolean(boolean) : {
+						false;
+					}
+					ArrayValue(values) : {
+						newValue := ArrayValue(values);
+						true;
+					}
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Array(elements) : {
+			arrayValue : ref Value = ref Int(0);
+			if(getValue(arrayExpr, states, arrayValue)){
+				switch(^arrayValue){
+					Int(decimal) : {
+						false
+					}
+					Boolean(boolean) : {
+						false;
+					}
+					ArrayValue(values) : {
+						newValue := ArrayValue(values);
+						true;
+					}
+				}
+			}
+			else{
+				false;
+			}
+		}
+		SetArr(array, index, expr) : {
+			arrayValue : ref ArrayValue = ref ArrayValue(ref []);
+			if(getArrayValue(array, states, arrayValue) && length((^((^arrayValue).values))) > 0){
+				indexValue : ref Int = ref Int(0);
+				if(getArifmValue(index, states, indexValue) && (^indexValue).decimal >= 0 && (^indexValue).decimal < length(^((^arrayValue).values)) - 1){
+					value : ref Value = ref Int(0);
+					if(getValue(expr, states, value)){
+						newArray : ref ArrayValue = ref ArrayValue(ref []);
+						successInserting = insertArrayValue(^arrayValue, (^indexValue).decimal + 1, ^value, newArray);
+						if(successInserting){
+							newValue := ^newArray;
+							true;
+						}
+						else{
+							false;
+						}
+					}
+					else{
+						false;
+					}
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		GetArr(array, index) : {
+			value : ref Value = ref Int(0);
+			if(operateGet(array, index, value, states)){
+				switch(^value){
+					Int(decimal) : {
+						false;
+					}
+					Boolean(boolean) : {
+						false;
+					}
+					ArrayValue(values) : {
+						newValue := ArrayValue(values);
+						true;
+					}
+				}
+			}
+			else{
+				false;
+			}
+		}
+	}
+}
+
+operateGet(array : ArrayExpr, index : Arifm, newValue : ref Value, states : HashMap<Letter, IndependedState>){
+	arrayValue : ref ArrayValue = ref ArrayValue(ref []);
+	if(getArrayValue(array, states, arrayValue) && length((^((^arrayValue).values))) > 0){
+		indexValue : ref Int = ref Int(0);
+		if(getArifmValue(index, states, indexValue) && (^indexValue).decimal >= 0 && (^indexValue).decimal < length(^((^arrayValue).values)) - 1){
+			newValue := (^((^arrayValue).values))[(^indexValue).decimal + 1];
+			true;
+		}
+		else{
+			false;
+		}
+	}
+	else{
+		false;
+	}
+}
+
+concatArrayValues(firstArray : ArrayValue, secondArray : ArrayValue, newArray : ref ArrayValue){
+	if(sameType(firstArray, secondArray)){
+		(^newArray).values := concat(^(firstArray.values), removeIndex(^(secondArray.values), 0));
+		true;
+	}
+	else{
+		false;
+	}
+}
+
+getArifmValue(arifmExpr : Arifm, states : HashMap<Letter, IndependedState>, newValue : ref Int){
+	switch(arifmExpr){
+		Int(decimal) : {
+			newValue := Int(decimal);
+			true;
+		}
+		Letter(letter) : {
+			letterValue : ref Value = ref Int(0);
+			if(getLetterValue(Letter(letter), states, letterValue)){
+				if(sameType(^letterValue, Int(0))){
+					switch(^letterValue){
+						Int(decimal) : {
+							newValue := Int(decimal);
+							true;
+						}
+						Boolean(boolean) : {
+							false;
+						}
+						ArrayValue(values) : {
+							false;
+						}
+					}
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Add(firstTerm, secondTerm) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(firstTerm, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(secondTerm, states, secondValue)){
+					newValue := Int((^firstValue).decimal + (^secondValue).decimal);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Sub(firstTerm, secondTerm) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(firstTerm, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(secondTerm, states, secondValue)){
+					newValue := Int((^firstValue).decimal - (^secondValue).decimal);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Mul(firstTerm, secondTerm) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(firstTerm, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(secondTerm, states, secondValue)){
+					newValue := Int((^firstValue).decimal * (^secondValue).decimal);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Div(firstTerm, secondTerm) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(firstTerm, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(secondTerm, states, secondValue)){
+					newValue := Int((^firstValue).decimal / (^secondValue).decimal);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		GetArr(array, index) : {
+			value : ref Value = ref Int(0);
+			if(operateGet(array, index, value, states)){
+				switch(^value){
+					Int(decimal) : {
+						newValue := Int(decimal);
+						true;
+					}
+					Boolean(boolean) : {
+						false;
+					}
+					ArrayValue(values) : {
+						false;
+					}
+				}
+			}
+			else{
+				false;
+			}
+		}
+	}
+}
+
+getLogicValue(logicExpr : Logic, states : HashMap<Letter, IndependedState>, newValue : ref Boolean){
+	switch(logicExpr){
+		Letter(letter) : {
+			letterValue : ref Value = ref Int(0);
+			if(getLetterValue(Letter(letter), states, letterValue)){
+				if(sameType(^letterValue, Boolean(0))){
+					switch(^letterValue){
+						Int(decimal) : {
+							false;
+						}
+						Boolean(boolean) : {
+							newValue := Boolean(boolean);
+							true;
+						}
+						ArrayValue(values) : {
+							false;
+						}
+					}
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		GetArr(array, index) : {
+			value : ref Value = ref Int(0);
+			if(operateGet(array, index, value, states)){
+				switch(^value){
+					Int(decimal) : {
+						false;
+					}
+					Boolean(boolean) : {
+						newValue := Boolean(boolean);
+						true;
+					}
+					ArrayValue(values) : {
+						false;
+					}
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Boolean(boolean) : {
+			newValue := Boolean(boolean);
+			true;
+		}
+		More(term1, term2) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(term1, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(term2, states, secondValue)){
+					more = (^firstValue).decimal > (^secondValue).decimal;
+					if(more){
+						newValue := Boolean(1);
+					}
+					else{
+						newValue := Boolean(0);
+					}
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Less(term1, term2) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(term1, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(term2, states, secondValue)){
+					more = (^firstValue).decimal < (^secondValue).decimal;
+					if(more){
+						newValue := Boolean(1);
+					}
+					else{
+						newValue := Boolean(0);
+					}
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Equal(term1, term2) : {
+			firstValue : ref Int = ref Int(0);
+			if(getArifmValue(term1, states, firstValue)){
+				secondValue : ref Int = ref Int(0);
+				if(getArifmValue(term2, states, secondValue)){
+					more = (^firstValue).decimal == (^secondValue).decimal;
+					if(more){
+						newValue := Boolean(1);
+					}
+					else{
+						newValue := Boolean(0);
+					}
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Or(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(term1, states, firstValue)){
+				secondValue : ref Boolean = ref Boolean(0);
+				if(getLogicValue(term2, states, secondValue)){
+					newValue := Boolean(
+						if((^firstValue).boolean + (^secondValue).boolean >= 1){
+							1;
+						}
+						else{
+							0;
+						}
+					);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		And(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(term1, states, firstValue)){
+				secondValue : ref Boolean = ref Boolean(0);
+				if(getLogicValue(term2, states, secondValue)){
+					newValue := Boolean((^firstValue).boolean * (^secondValue).boolean);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Xor(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(term1, states, firstValue)){
+				secondValue : ref Boolean = ref Boolean(0);
+				if(getLogicValue(term2, states, secondValue)){
+					newValue := Boolean(
+						if((^firstValue).boolean == (^secondValue).boolean){
+							0;
+						}
+						else{
+							1;
+						}
+					);
+					true;
+				}
+				else{
+					false;
+				}
+			}
+			else{
+				false;
+			}
+		}
+		Not(term) : {
+			value : ref Boolean = ref Boolean(0);
+			if(getLogicValue(term, states, value)){
+				newValue := Boolean(
+					if((^value).boolean == 1){
+						0;
+					}
+					else{
+						1;
+					}
+				);
+				true;
+			}
+			else{
+				false;
+			}
+		}
+	}
+}
+
+getValue(mainExpr : Expr, states : HashMap<Letter, IndependedState>, newValue : ref Value){
+	switch(mainExpr){
+		Int(decimal) : {
+			newValue := Int(decimal);
+			true;
+		}
+		Boolean(boolean) : {
+			newValue := Boolean(boolean);
+			true;
+		}
+		Letter(letter) : {
+			getLetterValue(Letter(letter), states, newValue);
+		}
+		Array(elements) : {
+			switch(elements){
+				Int(decimal) : {
+					newValue := ArrayValue(ref [Int(0), Int(decimal)]);
+					true;
+				}
+				Boolean(boolean) : {
+					newValue := ArrayValue(ref [Boolean(0), Boolean(boolean)]);
+					true;
+				}
+				Letter(letter) : {
+					letterValue : ref Value = ref Int(0);
+					isSuccess = getLetterValue(Letter(letter), states, letterValue);
+					if(isSuccess){
+						newValue := ArrayValue(ref [^letterValue, ^letterValue]);
+						true;
+					}
+					else{
+						false;
+					}
+				}
+				Array(innerElements) : {
+					innerArray : ref Value = ref Int(0);
+					isSuccess = getValue(Array(innerElements), states, innerArray);
+					if(isSuccess){
+						newValue := ArrayValue(ref [^innerArray, ^innerArray]);
+						true;
+					}
+					else{
+						false;
+					}
+				}
+				ArrNode(firstElements, secondElements) : {
+					firstArray : ref ArrayValue = ref ArrayValue(ref []);
+					isSuccess = getValue(Array(firstElements), states, firstArray);
+					if(isSuccess){
+						secondArray : ref ArrayValue = ref ArrayValue(ref []);
+						successValue = getValue(Array(secondElements), states, secondArray);
+						if(successValue){
+							newArray : ref ArrayValue = ref ArrayValue(ref []);
+							successConcating = concatArrayValues(^firstArray, ^secondArray, newArray);
+							if(successConcating){
+								newValue := ^newArray;
+								true;
+							}
+							else{
+								false;
+							}
+						}
+						else{
+							false;
+						}
+					}
+					else{
+						false;
+					}
+				}
+			}
+		}
+		
+		Add(term1, term2) : {
+			arifmValue : ref Int = ref Int(0);
+			if(getArifmValue(Add(term1, term2), states, arifmValue)){
+				newValue := ^arifmValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Sub(term1, term2) : {
+			arifmValue : ref Int = ref Int(0);
+			if(getArifmValue(Sub(term1, term2), states, arifmValue)){
+				newValue := ^arifmValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Mul(term1, term2) : {
+			arifmValue : ref Int = ref Int(0);
+			if(getArifmValue(Mul(term1, term2), states, arifmValue)){
+				newValue := ^arifmValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Div(term1, term2) : {
+			arifmValue : ref Int = ref Int(0);
+			if(getArifmValue(Div(term1, term2), states, arifmValue)){
+				newValue := ^arifmValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		
+		More(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(More(term1, term2), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Less(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(Less(term1, term2), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Equal(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(Equal(term1, term2), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		
+		Or(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(Or(term1, term2), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		And(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(And(term1, term2), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Xor(term1, term2) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(Xor(term1, term2), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		Not(term) : {
+			firstValue : ref Boolean = ref Boolean(0);
+			if(getLogicValue(Not(term), states, firstValue)){
+				newValue := ^firstValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		
+		GetArr(array, index) : {
+			value : ref Value = ref Int(0);
+			if(operateGet(array, index, value, states)){
+				newValue := ^value;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+		SetArr(array, index, expr) : {
+			arrayValue : ref ArrayValue = ref ArrayValue(ref []);
+			if(getArrayValue(SetArr(array, index, expr), states, arrayValue)){
+				newValue := ^arrayValue;
+				true;
+			}
+			else{
+				false;
+			}
+		}
+	}
+}
+
+assign(letter : Letter, expr : Expr, states : HashMap<Letter, IndependedState>){
+	if(!containsKeyHashMap(states, letter)){
+		println("Assignement error:");
+		println(letter);
+		println("Is not declarated");
+		false;
+	}
+	else{
+		newValue : ref Value = ref Int(0);
+		isSuccess = getValue(expr, states, newValue);
+		if(isSuccess){
+			letterState = lookupHashMap(states, letter);
+			switch(letterState){
+				None() : {
+					println("Assignement error:");
+					println(letter);
+					println("Can't get it");
+					false;
+				}
+				Some(state) : {
+					if(sameType(^(state.value), ^newValue)){
+						removeFromHashMap(states, letter);
+						setHashMap(states, letter, IndependedState(newValue));
+						true;
+					}
+					else{
+						false;
+					}
+				}
+			}
+		}
+		else{
+			false;
+		}
+	}
+}
+
+getBeginningStates(variables : Variables){
+	switch(variables){
+		Variable(letter, type) : {
+			getState(letter, type);
+		}
+		VariablesNode(variable, innerVariables) : {
+			firstState : [State] = getState(variable.letter, variable.type);
+			if(length(firstState) == 0){
+				[];
+			}
+			else{
+				otherStates : [State] = getBeginningStates(innerVariables);
+				if(length(otherStates) == 0){
+					[];
+				}
+				else if(containsLetter(otherStates, firstState[0].letter)){
+					[];
+				}
+				else{
+					concat(firstState, otherStates);
+				}
+			}
+		}
+	}
+}
+
+getArray(type : Types){
+	switch(type){
+		Int(badDecimal) : {
+			[Int(-1), Int(-1)];
+		}
+		Boolean(badBoolean) : {
+			[Boolean(-1), Boolean(-1)];
+		}
+		Type(innerType) : {
+			switch(innerType){
+				Int(decimal) : {
+					[Int(0)];
+				}
+				Boolean(badBoolean) : {
+					[Boolean(0)];
+				}
+				Type(typeArrayElement) : {
+					array : [Value] = getArray(typeArrayElement);
+					if(length(array) > 1){
+						[Int(-1), Int(-1)];
+					}
+					else{
+						[ArrayValue(ref array)];
+					}
+				}
+			}
+		}
+	}
+}
+
+getState(letter : Letter, type : Types){
+	switch(type){
+		Int(badDecimal) : {
+			[];
+		}
+		Boolean(badBoolean) : {
+			[];
+		}
+		Type(innerType) : {
+			switch(innerType){
+				Int(decimal) : {
+					arrayPush([], State(letter, ref Int(0)));
+				}
+				Boolean(boolean) : {
+					arrayPush([], State(letter, ref Boolean(0)));
+				}
+				Type(typeArrayElement) : {
+					array : [Value] = getArray(typeArrayElement);
+					if(length(array) > 1){
+						[];
+					}
+					else{
+						arrayPush([], State(letter, ref ArrayValue(ref array)));
+					}
+				}
+			}
+		}
+	}
+}
+
+getMarks(markSequence : MarkSequence){
+	switch(markSequence){
+		Int(decimal) : {
+			if(decimal < 0){
+				[Int(-1)];
+			}
+			else{
+				[Int(decimal)];
+			}
+		}
+		MarkNode(leftMarkSequence, rightMarkSequence) : {
+			leftMarksArray : [Int] = getMarks(leftMarkSequence);
+			if(length(leftMarksArray) == 1 && leftMarksArray[0].decimal < 0){
+				[Int(-1)];
+			}
+			else{
+				rightMarksArray : [Int] = getMarks(rightMarkSequence);
+				if(length(rightMarksArray) == 1 && rightMarksArray[0].decimal < 0){
+					[Int(-1)];
+				}
+				else{
+					concat(leftMarksArray, rightMarksArray);
+				}
+			}
+		}
+	}
+}
+
+arrayStatesToMapStates(states : [State], statesMap : HashMap<Letter, IndependedState>){
+	fold(states, 1, \nothing,state -> {
+		setHashMap(statesMap, state.letter, IndependedState(state.value));
+		1;
+	});
+}
+
+arrayOperatorsToMapOperators(operators : [OperatorVM], operatorsMap : HashMap<Int, IndependedOperatorVM>){
+	fold(operators, true, \isSuccess,operator -> {
+		if(isSuccess){
+			marks : [Int] = getMarks(operator.markSet.markSequence);
+			if(length(marks) == 1 && marks[0].decimal < 1){
+				false;
+			}
+			else{
+				setHashMap(operatorsMap, operator.mark, IndependedOperatorVM(operator.operator, marks));
+				true;
+			}
+		}
+		else{
+			false;
+		}
+	});
+}
+
+containsLetter(states : [State], letter : Letter){
+	fold(states, false, \contains,state -> {
+		if(state.letter.letter == letter.letter){
+			true;
+		}
+		else{
+			contains;
+		}
+	});
+}
+
+hashLetter(key : Letter){
+	string2utf8(key.letter)[0];
+}
+
+hashInt(key : Int){
+	key.decimal;
+}

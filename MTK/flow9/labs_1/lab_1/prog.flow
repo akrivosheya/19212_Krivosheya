@@ -1,0 +1,15 @@
+import runtime;
+import string;
+
+arrayIntToString : (arrayInt : [int]) -> [string];
+
+main(){
+	arrayInt : [int] = [1, 2, 3, 4, 5];
+	arrayString : [string] = arrayIntToString(arrayInt);
+	//line : string = strGlue(arrayString, " ");
+	println(arrayString);
+}
+
+arrayIntToString(arrayInt : [int]){
+	map(arrayInt, i2s);
+}

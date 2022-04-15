@@ -1,0 +1,17 @@
+import runtime;
+import ds/vector;
+
+export{
+	Mul : (base: DecomposedExpr, pow: DecomposedExpr, powSign : int);
+	
+	DecomposedExpr ::= Int, Letter, Sum, SignedProduct;
+	Expr ::= Int, Node, Ter, Brackets, Letter;
+	Node : (exp1: Expr, exp2: Expr);
+	Brackets : (expBracket: Expr);
+	Ter : (signEl: string, el: Expr);
+	
+	Int : (dec: int);
+	Letter : (letter: string);
+	Sum : (sum: Vector<SignedProduct>);
+	SignedProduct : (sign : ref int, product: Vector<Mul>);
+}

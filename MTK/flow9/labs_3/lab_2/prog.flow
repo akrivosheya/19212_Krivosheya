@@ -1,0 +1,22 @@
+import lingo/pegcode/driver;
+import runtime;
+import lingo/labs_3/lab_2/structs;
+import lingo/labs_3/lab_2/execution;
+
+import ds/vector;
+
+lingoGrammarOp : ref Maybe<[PegOp]> = ref None();
+
+lingoGrammar() {
+	onlyOnce(lingoGrammarOp, \ -> {
+		compilePegGrammar("#include lingo/labs_3/lab_2/nemovm.lingo");
+	});
+}
+
+main() {
+	result = parsic(lingoGrammar(), "var y:bool;var x:int;0: x=3 goto{1,2}1: y=true goto{3}2: print((x*4)) goto{4}3: print((y&false)) goto{4}", defaultPegActions);
+	println(result);
+	println("\nExecution:");
+	execute(result);
+	quit(0);
+}

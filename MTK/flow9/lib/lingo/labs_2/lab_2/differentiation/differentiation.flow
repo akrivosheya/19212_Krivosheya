@@ -1,0 +1,68 @@
+import runtime;
+import ds/vector;
+import lingo/labs_2/lab_2/structs;
+import lingo/labs_2/lab_2/simplifying/comparing;
+import lingo/labs_2/lab_2/simplifying/simplifying;
+import lingo/labs_2/lab_2/ast;
+
+export{
+	differentiate(expr : Expr, variable : string) -> Expr;
+	differetiateSum(decomposedSum : Vector<SignedProduct>, variable : Letter, 
+		newDecomposedSum : Vector<SignedProduct>, index : int) -> void;
+	differetiateProduct(signedProduct : SignedProduct, variable : Letter, newDecomposedSum : Vector<SignedProduct>, 
+		index : int) -> void;
+}
+
+differentiate(expr : Expr, variable : string){
+	decomposedSum : Vector<SignedProduct> = decompose(expr);
+	newDecomposedSum : Vector<SignedProduct> = makeVector(10);
+	differetiateSum(decomposedSum, Letter(variable), newDecomposedSum, 0);
+	mapVector(newDecomposedSum, simplifyProduct);
+	simplifySum(newDecomposedSum);
+	newExpr = getAstTree(Sum(newDecomposedSum), false, 1);
+	switch(newExpr){
+		Brackets(expBrack) : {
+			expBrack;
+		}
+		Node(e1, e2) : {
+			newExpr;
+		}
+		Int(d) : {
+			newExpr;
+		}
+		Letter(l) : {
+			newExpr;
+		}
+		Ter(s, t) : {
+			newExpr;
+		}
+	}
+}
+
+differetiateSum(decomposedSum : Vector<SignedProduct>, variable : Letter, newDecomposedSum : Vector<SignedProduct>,
+index : int){
+	if(index < sizeVector(decomposedSum)){
+		signedProduct : SignedProduct = getVectorUnsafe(decomposedSum, index);
+		differetiateProduct(signedProduct, variable, newDecomposedSum, 0);
+		differetiateSum(decomposedSum, variable, newDecomposedSum, index + 1);
+	}
+}
+
+differetiateProduct(signedProduct : SignedProduct, variable : Letter, newDecomposedSum : Vector<SignedProduct>, 
+index : int){
+	productSize = sizeVector(signedProduct.product);
+	if(index < productSize){
+		indexVariable = findSameMul(signedProduct.product, Mul(variable, Int(1), 1), index, productSize, true, true, 
+			false, false);
+		if(indexVariable != productSize){
+			mul = getVectorUnsafe(signedProduct.product, indexVariable);
+			newSignedProduct : SignedProduct = SignedProduct(ref ^(signedProduct.sign), copyVector(signedProduct.product));
+			removeVector(newSignedProduct.product, indexVariable);
+			pushVector(newSignedProduct.product, Mul(variable, add(makeSum(mul.pow, mul.powSign), makeSum(Int(1), -1)), 1));
+			pushVector(newSignedProduct.product, Mul(mul.pow, Int(1), 1));
+			newSignedProduct.sign := ^(newSignedProduct.sign) * mul.powSign;
+			pushVector(newDecomposedSum, newSignedProduct);
+		}
+		differetiateProduct(signedProduct, variable, newDecomposedSum, indexVariable + 1);
+	}
+}

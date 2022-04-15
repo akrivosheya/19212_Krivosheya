@@ -1,0 +1,96 @@
+import math/math;
+import string;
+import ds/hashmap;
+import lingo/labs_2/lab_2/structs;
+
+export{
+	getStringExpr(expr: Expr) -> string;
+	getExprRes(expr: Expr, variables: HashMap<string, double>) -> double;
+	hash(key: string) -> int;
+	getValue(letter: string, variables: HashMap<string, double>) -> double;
+}
+
+getStringExpr(expr: Expr){
+	switch(expr : Expr){
+		Node(exp1, exp2) : {
+			strings	= [getStringExpr(exp1), getStringExpr(exp2)];
+			concatStrings(strings);
+		}
+		Brackets(bracketsExp) : {
+			strings = ["(", getStringExpr(bracketsExp), ")"];
+			concatStrings(strings);
+		}
+		Ter(symb, expWithSign) : {
+			if(symb == "p" || symb == "s" || symb == "m"){
+				getStringExpr(expWithSign);
+			} else {
+				strings = [symb, getStringExpr(expWithSign)];
+				concatStrings(strings);
+			}
+		}
+		Int(dec) : {
+			i2s(dec);
+		}
+		Letter(letter) : {
+			letter;
+		}
+	}
+}
+
+getExprRes(expr: Expr, variables: HashMap<string, double>){
+	switch(expr : Expr){
+		Node(exp1, exp2) : {
+			symb = switch(exp1){
+				Ter(symb, expSigned) : symb;
+				Int(dec) : "0";
+				Brackets(expb) : "0";
+				Node(expr1, expr2) : "0";
+				Letter(letter) : "0";
+			}
+			if(symb == "s" || symb == "+" || symb == "-"){
+				getExprRes(exp1, variables) + getExprRes(exp2, variables);
+			} else if(symb == "m" || symb == "*" || symb == "/"){
+				getExprRes(exp1, variables) * getExprRes(exp2, variables);
+			} else if(symb == "p" || symb == "^"){
+				dpow(getExprRes(exp1, variables), getExprRes(exp2, variables));
+			}else{
+				0.0;
+			}
+		}
+		Brackets(bracketsExp) : {
+			getExprRes(bracketsExp, variables);
+		}
+		Ter(symb, expWithSign) : {
+			if(symb == "s" || symb == "+" || symb == "m" || symb == "*" || symb == "p" || symb == "^"){
+				getExprRes(expWithSign, variables);
+			} else if(symb == "-"){
+				-1.0 * getExprRes(expWithSign, variables);
+			} else if(symb == "/"){
+				1.0 / getExprRes(expWithSign, variables);
+			} else {
+				0.0;
+			}
+		}
+		Int(dec) : {
+			i2d(dec);
+		}
+		Letter(letter) : {
+			getValue(letter, variables);
+		}
+	}
+}
+
+getValue(letter: string, variables: HashMap<string, double>){
+	if(!containsKeyHashMap(variables, letter)){
+		value = 1.0;//							getting value from command line
+		setHashMap(variables, letter, value);
+		value;
+	} else {
+		value = lookupHashMap(variables, letter);
+		value ?? value : 0.0;
+	}
+}
+
+hash(key: string){
+	string2utf8(key)[0];
+}
