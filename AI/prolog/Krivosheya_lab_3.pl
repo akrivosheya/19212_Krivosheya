@@ -1,0 +1,188 @@
+/*Отношения Игра-Свойства. У каждой игры свой набор свойств. ЭС будет пробегать
+по списку свойств, чтобы понять, подходит игра пользователю, или нет.*/
+rule("Stardew valley",[1,2,3,4,5,6,7,12,13,14,15]).
+rule("Five Nights at Freddy's",[8,11,3,12,1,9,10]).
+rule("The Binding of Isaac",[12,16,17,18,2,3,4,5,7]).
+rule("Job Simulator", [12,1,15,11,3,19]).
+rule("Assassin's Creed", [16,20,21,22,3,5,6]).
+rule("Mass Effect", [16,13,24,20,22,3,6,25]).
+rule("Counter-Strike: Global Offensive",[16,24,22,4]).
+rule("Terraria",[16,13,12,20,15,13,26,27,3,4,5,6,7,10]).
+rule("Just Shapes & Beats",[16,12,28,18,3,4,5]).
+rule("Beat Saber",[12,28,16,11,3,19]).
+
+/*Свойства игр. Их наличие в предвочтениях пользователя проверяется ЭС.
+Также он будут выводится при вопросе пользователя о свойствах конкретной
+игры.*/
+property(12,"Инди").
+property(13,"Ролевая").
+property(1,"Симулятор").
+property(14,"Фермерство").
+property(15,"Песочница").
+property(8,"Point & click").
+property(16,"Экшен").
+property(17,"Рогалик").
+property(18,"Bullet hell").
+property(20,"Приключение").
+property(21,"Стэлс").
+property(24,"Шутер").
+property(26,"Платформер").
+property(28,"Ритмушка").
+
+property(2,"С видом сверху").
+property(11,"С видом от первого лица").
+property(22,"С видом от третьего лица").
+property(27,"С видом с боку").
+
+property(3,"Для одного игрока").
+property(4,"Кооператив").
+
+property(5,"Поддерживающая контроллер").
+property(19,"VR").
+
+property(6,"Открытый мир").
+property(7,"Пиксельная").
+property(9,"Хоррор").
+property(10,"Выживание").
+property(23,"Историчиская").
+property(25,"Фантастика").
+
+/*Динамические факты. Возникают во время опросов. Указывают, является ли то или
+иное свойство игры предпочтительным для пользователся.*/
+:-dynamic db_yes/1, db_no/1.
+
+/*Предикат, динамически запоминающий ответ пользователя об его предвочтениях.
+Соответственно сохраняет свойство удовлетворительным, если пользователь ответил
+"да" во время опроса, и неудовлетворительным, если "нет".*/
+remember(да,X):-
+    asserta(db_yes(X)). /*вернёт наверх истину*/
+remember(нет,X):-
+    asserta(db_no(X)),
+    fail. /*вернёт наверх ложь*/
+
+/*Предикат, задающий вопрос пользователю о свойстве, и потом передающий ответ
+для сохранения факта.*/
+check_if(X):-
+    writeln(X),
+    read(Reply),
+    remember(Reply, X).
+
+/*Предикаты, отражающие предпочтения пользователя. При наличии соответствующих
+сохранённых предпочтений выдают истину либо ложь. При отсутствии таковых
+запускают опрос пользователя, и уже зависят от будущего ответа.*/
+yes(X):-
+    db_yes(X),
+    !.
+yes(X):-
+    not(no(X)),
+    !,
+    check_if(X).
+no(X):-
+    db_no(X),
+    !.
+
+/*Проверка наличия у игры свойства путём перебора элементов из списка*/
+check_property([]).
+check_property([N|Property]):-
+    property(N, A),
+    yes(A),
+    check_property(Property).
+
+/*Взятие свойств игры*/
+game(X):-
+    rule(X,Property),
+    check_property(Property).
+
+/*Вывод свойтсв из списка*/
+write_properties([]):-
+    !.
+write_properties([Id|Ids]):-
+    property(Id,Property),
+    write("\t"),
+    writeln(Property),
+    write_properties(Ids).
+
+/*Вывод игр из списка и их свойств*/
+write_games([]):-
+    !.
+write_games([Game|Games]):-
+    write("Вам подойдёт "),
+    write(Game),
+    writeln(", так как вы предпочитаете игры со следующими свойствами:"),
+    rule(Game,Properties),
+    write_properties(Properties),
+    write_games(Games).
+
+/*Запуск опроса по свойствам. В список попадут игры с подходящими свойствами*/
+consultation:-
+    retractall(db_yes(_)),
+    retractall(db_no(_)),
+    writeln("Ответьте, подходят ли вам такие игры:"),
+    findall(Game,game(Game),List),
+    write_games(List),
+    !.
+
+/*Вывести все игры*/
+write_all_games:-
+    rule(Game,_),
+    write("\t"),
+    writeln(Game),
+    fail.
+
+/*Проверка, что объект является игрой*/
+check_game("*","*"):-
+    !.
+check_game(Game,"-"):-
+    rule(Game,_),
+    !.
+check_game(_,_):-
+    writeln("Нет такой игры"),
+    fail.
+
+/*Если передан параметр "*", то никаких действий не совершать
+ * иначе распечатать свойства выбранной игры*/
+write_or_goback(_,"*"):-
+    !.
+write_or_goback(Game,_):-
+    writeln("Эта игра имеет следующие свойства:"),
+    rule(Game,Properties),
+    write_properties(Properties).
+
+/*Если передан параметр "*", то вернуть ложь и тем самым вернуться к выбору действий*/
+goback("*"):-
+    !,
+    fail.
+goback(_).
+
+/*Вывод всех игр и далее вывод свойств выбранной игры, иначе возвращение к выбору действий*/
+ask_properties:-
+    repeat,
+    writeln("О какой игре вы бы хотели узнать? Нажмите \"*\", ессли хотите вернуться назад."),
+    not(write_all_games),
+    read(Game),
+    check_game(Game,Goback),
+    write_or_goback(Game,Goback),
+    !,
+    goback(Goback).
+
+/*Кейсы, какой диалог начать*/
+choose_dialog(1):-
+    !,
+    consultation.
+choose_dialog(2):-
+    !,
+    ask_properties.
+choose_dialog(3):-
+    !,
+    writeln("Отмена").
+choose_dialog(_):-
+    writeln("нет такого действия"),
+    fail.
+
+/*Начало программы*/
+start:-
+    repeat,
+    writeln("1 - подобрать подходящую игру\n2 - узнать свойства определённой игры\n3 - для выхода"),
+    read(Answer),
+    choose_dialog(Answer),
+    !.
